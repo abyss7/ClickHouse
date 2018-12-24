@@ -591,11 +591,22 @@ std::string ExpressionAction::toString() const
 
         case JOIN:
             ss << "JOIN ";
-            for (NamesAndTypesList::const_iterator it = columns_added_by_join.begin(); it != columns_added_by_join.end(); ++it)
+            for (auto it = columns_added_by_join.cbegin(); it != columns_added_by_join.cend(); ++it)
             {
-                if (it != columns_added_by_join.begin())
+                if (it != columns_added_by_join.cbegin())
                     ss << ", ";
                 ss << it->name;
+            }
+            if (!columns_added_by_join_from_right_keys.empty())
+            {
+                ss << " (right keys ";
+                for (auto it = columns_added_by_join_from_right_keys.cbegin(); it != columns_added_by_join_from_right_keys.cend(); ++it)
+                {
+                    if (it != columns_added_by_join_from_right_keys.cbegin())
+                        ss << ", ";
+                    ss << *it;
+                }
+                ss << ")";
             }
             break;
 

@@ -1,56 +1,58 @@
+#include <Interpreters/InterpreterSelectQuery.h>
+
+#include <DataStreams/AggregatingBlockInputStream.h>
+#include <DataStreams/AsynchronousBlockInputStream.h>
+#include <DataStreams/ConcatBlockInputStream.h>
+#include <DataStreams/ConvertColumnLowCardinalityToFullBlockInputStream.h>
+#include <DataStreams/ConvertingBlockInputStream.h>
+#include <DataStreams/CreatingSetsBlockInputStream.h>
+#include <DataStreams/CubeBlockInputStream.h>
+#include <DataStreams/DistinctBlockInputStream.h>
 #include <DataStreams/ExpressionBlockInputStream.h>
 #include <DataStreams/FilterBlockInputStream.h>
 #include <DataStreams/LimitBlockInputStream.h>
 #include <DataStreams/LimitByBlockInputStream.h>
-#include <DataStreams/PartialSortingBlockInputStream.h>
+#include <DataStreams/MaterializingBlockInputStream.h>
 #include <DataStreams/MergeSortingBlockInputStream.h>
-#include <DataStreams/MergingSortedBlockInputStream.h>
-#include <DataStreams/AggregatingBlockInputStream.h>
 #include <DataStreams/MergingAggregatedBlockInputStream.h>
 #include <DataStreams/MergingAggregatedMemoryEfficientBlockInputStream.h>
-#include <DataStreams/AsynchronousBlockInputStream.h>
-#include <DataStreams/UnionBlockInputStream.h>
-#include <DataStreams/ParallelAggregatingBlockInputStream.h>
-#include <DataStreams/DistinctBlockInputStream.h>
+#include <DataStreams/MergingSortedBlockInputStream.h>
 #include <DataStreams/NullBlockInputStream.h>
-#include <DataStreams/TotalsHavingBlockInputStream.h>
-#include <DataStreams/copyData.h>
-#include <DataStreams/CreatingSetsBlockInputStream.h>
-#include <DataStreams/MaterializingBlockInputStream.h>
-#include <DataStreams/ConcatBlockInputStream.h>
+#include <DataStreams/ParallelAggregatingBlockInputStream.h>
+#include <DataStreams/PartialSortingBlockInputStream.h>
 #include <DataStreams/RollupBlockInputStream.h>
-#include <DataStreams/CubeBlockInputStream.h>
-#include <DataStreams/ConvertColumnLowCardinalityToFullBlockInputStream.h>
+#include <DataStreams/TotalsHavingBlockInputStream.h>
+#include <DataStreams/UnionBlockInputStream.h>
+#include <DataStreams/copyData.h>
 
-#include <Parsers/ASTSelectQuery.h>
-#include <Parsers/ASTSelectWithUnionQuery.h>
-#include <Parsers/ASTIdentifier.h>
 #include <Parsers/ASTFunction.h>
+#include <Parsers/ASTIdentifier.h>
 #include <Parsers/ASTLiteral.h>
 #include <Parsers/ASTOrderByElement.h>
+#include <Parsers/ASTSelectQuery.h>
+#include <Parsers/ASTSelectWithUnionQuery.h>
 #include <Parsers/ASTTablesInSelectQuery.h>
+#include <Parsers/queryToString.h>
 
-#include <Interpreters/InterpreterSelectQuery.h>
+#include <Interpreters/DatabaseAndTableWithAlias.h>
+#include <Interpreters/ExpressionAnalyzer.h>
 #include <Interpreters/InterpreterSelectWithUnionQuery.h>
 #include <Interpreters/InterpreterSetQuery.h>
-#include <Interpreters/ExpressionAnalyzer.h>
-#include <Interpreters/DatabaseAndTableWithAlias.h>
-#include <Storages/MergeTree/MergeTreeWhereOptimizer.h>
 
 #include <Storages/IStorage.h>
+#include <Storages/MergeTree/MergeTreeWhereOptimizer.h>
 #include <Storages/StorageMergeTree.h>
 #include <Storages/StorageReplicatedMergeTree.h>
 
 #include <TableFunctions/ITableFunction.h>
 #include <TableFunctions/TableFunctionFactory.h>
 
-#include <Core/Field.h>
 #include <Columns/Collator.h>
+#include <Core/Field.h>
 #include <Common/typeid_cast.h>
-#include <Parsers/queryToString.h>
-#include <ext/map.h>
+
 #include <memory>
-#include <DataStreams/ConvertingBlockInputStream.h>
+#include <ext/map.h>
 
 
 namespace DB

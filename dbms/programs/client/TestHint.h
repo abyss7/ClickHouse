@@ -65,6 +65,11 @@ public:
             actual_client_error = 0;
             return false;
         }
+        else if (client_error || server_error)
+        {
+            std::cerr << "Unexpected server error " << actual_server_error << " (vs " << server_error << "), client error "
+                      << actual_client_error << " (vs " << client_error << ")" << std::endl;
+        }
 
         if (lostExpectedError(actual_server_error, actual_client_error))
         {

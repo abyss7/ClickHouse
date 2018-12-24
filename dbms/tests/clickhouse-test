@@ -274,10 +274,11 @@ def main(args):
                                         report_testcase.append(skipped)
                                         print("{0} - no reference file".format(MSG_UNKNOWN))
                                     else:
-                                        result_is_different = subprocess.call(['cmp', '-s', reference_file, stdout_file], stdout = PIPE)
+                                        diff_cmd = ['diff', '--unified', '--ignore-all-space', '--ignore-blank-lines', reference_file, stdout_file]
+                                        result_is_different = subprocess.call(diff_cmd + ['-q'], stdout = PIPE)
 
                                         if result_is_different:
-                                            (diff, _) = Popen(['diff', '--unified', reference_file, stdout_file], stdout = PIPE).communicate()
+                                            (diff, _) = Popen(diff_cmd, stdout = PIPE).communicate()
                                             diff = unicode(diff, errors='replace', encoding='utf-8')
 
                                             failure = et.Element("failure", attrib = {"message": "result differs with reference"})
