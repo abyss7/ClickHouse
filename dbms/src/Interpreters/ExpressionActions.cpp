@@ -1143,7 +1143,11 @@ BlockInputStreamPtr ExpressionActions::createStreamWithNonJoinedDataIfFullOrRigh
 {
     for (const auto & action : actions)
         if (action.join && (action.join->getKind() == ASTTableJoin::Kind::Full || action.join->getKind() == ASTTableJoin::Kind::Right))
+        {
+            auto log = &Poco::Logger::get("ACTIONS");
+            LOG_INFO(log, "join " << action.toString());
             return action.join->createStreamWithNonJoinedRows(source_header, action.join_key_names_left, max_block_size);
+        }
 
     return {};
 }

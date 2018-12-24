@@ -797,7 +797,7 @@ void Join::joinBlockImpl(
 
     ColumnUInt64::Ptr mapping;
 
-    /// Add join key columns from right block if they has different name.
+    /// Add join key columns from right block if they have different name.
     for (size_t i = 0; i < key_names_right.size(); ++i)
     {
         auto & right_name = key_names_right[i];
@@ -961,8 +961,6 @@ void Join::joinGet(Block & block, const String & column_name) const
 
 void Join::joinBlock(Block & block, const Names & key_names_left, const NameSet & needed_key_names_right) const
 {
-//    std::cerr << "joinBlock: " << block.dumpStructure() << "\n";
-
     std::shared_lock lock(rwlock);
 
     checkTypesOfKeys(block, key_names_left, sample_block_with_keys);
@@ -1032,14 +1030,12 @@ struct AdderNonJoined;
 template <typename Mapped>
 struct AdderNonJoined<ASTTableJoin::Strictness::Any, Mapped>
 {
-    static void add(const Mapped & mapped, size_t & rows_added,
-        size_t num_columns_left, MutableColumns & columns_left,
-        size_t num_columns_right, MutableColumns & columns_right)
+    static void add(const Mapped & mapped, size_t & rows_added, MutableColumns & columns_left, MutableColumns & columns_right)
     {
-        for (size_t j = 0; j < num_columns_left; ++j)
+        for (size_t j = 0; j < columns_left.size(); ++j)
             columns_left[j]->insertDefault();
 
-        for (size_t j = 0; j < num_columns_right; ++j)
+        for (size_t j = 0; j < columns_right.size(); ++j)
             columns_right[j]->insertFrom(*mapped.block->getByPosition(j).column.get(), mapped.row_num);
 
         ++rows_added;
@@ -1049,16 +1045,14 @@ struct AdderNonJoined<ASTTableJoin::Strictness::Any, Mapped>
 template <typename Mapped>
 struct AdderNonJoined<ASTTableJoin::Strictness::All, Mapped>
 {
-    static void add(const Mapped & mapped, size_t & rows_added,
-        size_t num_columns_left, MutableColumns & columns_left,
-        size_t num_columns_right, MutableColumns & columns_right)
+    static void add(const Mapped & mapped, size_t & rows_added, MutableColumns & columns_left, MutableColumns & columns_right)
     {
         for (auto current = &static_cast<const typename Mapped::Base_t &>(mapped); current != nullptr; current = current->next)
         {
-            for (size_t j = 0; j < num_columns_left; ++j)
+            for (size_t j = 0; j < columns_left.size(); ++j)
                 columns_left[j]->insertDefault();
 
-            for (size_t j = 0; j < num_columns_right; ++j)
+            for (size_t j = 0; j < columns_right.size(); ++j)
                 columns_right[j]->insertFrom(*current->block->getByPosition(j).column.get(), current->row_num);
 
             ++rows_added;
@@ -1074,8 +1068,9 @@ public:
     NonJoinedBlockInputStream(const Join & parent_, const Block & left_sample_block, const Names & key_names_left, size_t max_block_size_)
         : parent(parent_), max_block_size(max_block_size_)
     {
-        /** left_sample_block contains keys and "left" columns.
-          * result_sample_block - keys, "left" columns, and "right" columns.
+        /** parent contains "right" keys, "right" columns and "right" key names.
+          * left_sample_block contains "left" keys and "left" columns.
+          * result_sample_block - "left" keys, "left" columns, different "right" keys, and "right" columns.
           */
 
         size_t num_keys = key_names_left.size();
@@ -1189,7 +1184,7 @@ private:
         {
         #define M(TYPE) \
             case Join::Type::TYPE: \
-                rows_added = fillColumns<STRICTNESS>(*maps.TYPE, num_columns_left, columns_left, num_columns_right, columns_keys_and_right); \
+                rows_added = fillColumns<STRICTNESS>(*maps.TYPE, columns_left, columns_keys_and_right); \
                 break;
             APPLY_FOR_JOIN_VARIANTS(M)
         #undef M
@@ -1212,9 +1207,7 @@ private:
 
 
     template <ASTTableJoin::Strictness STRICTNESS, typename Map>
-    size_t fillColumns(const Map & map,
-        size_t num_columns_left, MutableColumns & columns_left,
-        size_t num_columns_right, MutableColumns & columns_right)
+    size_t fillColumns(const Map & map, MutableColumns & columns_left, MutableColumns & columns_right)
     {
         size_t rows_added = 0;
 
@@ -1231,7 +1224,7 @@ private:
             if (it->second.getUsed())
                 continue;
 
-            AdderNonJoined<STRICTNESS, typename Map::mapped_type>::add(it->second, rows_added, num_columns_left, columns_left, num_columns_right, columns_right);
+            AdderNonJoined<STRICTNESS, typename Map::mapped_type>::add(it->second, rows_added, columns_left, columns_right);
 
             if (rows_added >= max_block_size)
             {

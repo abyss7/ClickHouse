@@ -545,8 +545,11 @@ void InterpreterSelectQuery::executeImpl(Pipeline & pipeline, const BlockInputSt
             {
                 const ASTTableJoin & join = static_cast<const ASTTableJoin &>(*query.join()->table_join);
                 if (join.kind == ASTTableJoin::Kind::Full || join.kind == ASTTableJoin::Kind::Right)
+                {
+                    LOG_INFO(log, "before join " << expressions.before_join->dumpActions());
                     pipeline.stream_with_non_joined_data = expressions.before_join->createStreamWithNonJoinedDataIfFullOrRightJoin(
                         pipeline.firstStream()->getHeader(), settings.max_block_size);
+                }
 
                 for (auto & stream : pipeline.streams)   /// Applies to all sources except stream_with_non_joined_data.
                     stream = std::make_shared<ExpressionBlockInputStream>(stream, expressions.before_join);
@@ -1467,13 +1470,27 @@ void InterpreterSelectQuery::unifyStreams(Pipeline & pipeline)
     {
         /// Unify streams in case they have different headers.
         auto first_header = pipeline.streams.at(0)->getHeader();
+        LOG_INFO(log, "first " << first_header.dumpStructure());
         for (size_t i = 1; i < pipeline.streams.size(); ++i)
         {
             auto & stream = pipeline.streams[i];
             auto header = stream->getHeader();
             auto mode = ConvertingBlockInputStream::MatchColumnsMode::Name;
             if (!blocksHaveEqualStructure(first_header, header))
+            {
                 stream = std::make_shared<ConvertingBlockInputStream>(context, stream, first_header, mode);
+            }
+        }
+        if (pipeline.stream_with_non_joined_data)
+        {
+            auto & stream = pipeline.stream_with_non_joined_data;
+            auto header = stream->getHeader();
+            LOG_INFO(log, "non_joined " << header.dumpStructure());
+            auto mode = ConvertingBlockInputStream::MatchColumnsMode::Name;
+            if (!blocksHaveEqualStructure(first_header, header))
+            {
+                stream = std::make_shared<ConvertingBlockInputStream>(context, stream, first_header, mode);
+            }
         }
     }
 }

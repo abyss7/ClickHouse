@@ -653,11 +653,14 @@ bool ExpressionAnalyzer::appendJoin(ExpressionActionsChain & chain, bool only_ty
             if (required_columns_from_joined_table.count(column.name_and_type.name))
                 subquery_for_set.joined_block_aliases.emplace_back(column.original_name, column.name_and_type.name);
 
+        auto log = &Poco::Logger::get("EXPRESS");
+
         auto sample_block = subquery_for_set.source->getHeader();
         for (const auto & name_with_alias : subquery_for_set.joined_block_aliases)
         {
             if (sample_block.has(name_with_alias.first))
             {
+                LOG_INFO(log, "alias " << name_with_alias.first << " " << name_with_alias.second);
                 auto pos = sample_block.getPositionByName(name_with_alias.first);
                 auto column = sample_block.getByPosition(pos);
                 sample_block.erase(pos);
@@ -667,6 +670,8 @@ bool ExpressionAnalyzer::appendJoin(ExpressionActionsChain & chain, bool only_ty
         }
 
         joined_block_actions->execute(sample_block);
+
+        LOG_INFO(log, "block " << sample_block.dumpNames());
 
         /// TODO You do not need to set this up when JOIN is only needed on remote servers.
         subquery_for_set.join = join;
