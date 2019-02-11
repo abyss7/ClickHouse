@@ -1,0 +1,47 @@
+configure("base") {
+    cflags = [
+        "-fdiagnostics-color=always",
+        "-fno-strict-aliasing",
+        "-pipe",
+        "-msse4.1",
+        "-msse4.2",
+
+        # Warnings
+        "-Wall",
+        "-Wno-unused-command-line-argument",
+        "-Wnon-virtual-dtor",
+        "-Wno-old-style-cast",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+        "-Wno-unused-result",
+        "-Wno-deprecated-declarations",
+        "-Wno-non-virtual-dtor",
+        "-Wno-format",
+        "-Wno-inconsistent-missing-override",
+        "-Wno-sign-compare",
+        "-Wno-unknown-pragmas",
+    ]
+
+    cxxflags = [
+        "-std=c++17",
+    ]
+
+    ldflags = [
+        "-no-undefines",
+    ]
+}
+
+configure("debug") {
+    cflags = [
+        "-g",
+        "-O0",
+        "-g3",
+        "-ggdb3",
+        "-fno-inline",
+    ]
+
+    defines = [
+        "_LIBCPP_DEBUG=0",
+        "_DEBUG",
+    ]
+}

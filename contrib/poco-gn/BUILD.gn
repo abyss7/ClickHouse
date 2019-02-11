@@ -1,0 +1,29 @@
+config("private") {
+    defines = [
+        "POCO_EXTERNAL_OPENSSL",
+        "POCO_HAVE_FD_EPOLL",
+        "POCO_UNBUNDLED",
+        "_FILE_OFFSET_BITS=64",
+        "_LARGEFILE64_SOURCE",
+        "_REENTRANT",
+        "_THREAD_SAFE",
+        "_XOPEN_SOURCE=500",
+    ]
+}
+
+target(library, "CppUnit") {
+    sources = [
+        "../poco/CppUnit/src/CppUnitException.cpp",
+        "../poco/CppUnit/src/TestCase.cpp",
+        "../poco/CppUnit/src/TestDecorator.cpp",
+        "../poco/CppUnit/src/TestFailure.cpp",
+        "../poco/CppUnit/src/TestResult.cpp",
+        "../poco/CppUnit/src/TestRunner.cpp",
+        "../poco/CppUnit/src/TestSuite.cpp",
+        "../poco/CppUnit/src/TextTestResult.cpp",
+    ]
+
+    defines = [
+        "CppUnit_EXPORTS",
+    ]
+}

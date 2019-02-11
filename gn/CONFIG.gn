@@ -1,0 +1,34 @@
+declare_args() {
+    build_type = "debug"
+    compiler = "clang"
+    library = "shared_library"
+}
+
+default_configs = [
+    "//gn:base",
+]
+
+default_deps = [
+]
+
+set_defaults("executable") {
+    configs = default_configs
+    deps = default_deps
+}
+
+set_defaults("shared_library") {
+    configs = default_configs
+    deps = default_deps
+}
+
+set_defaults("source_set") {
+    configs = default_configs
+    deps = default_deps
+}
+
+set_defaults("static_library") {
+    configs = default_configs
+    deps = default_deps
+}
+
+set_default_toolchain("//gn/${host_os}:${compiler}")
