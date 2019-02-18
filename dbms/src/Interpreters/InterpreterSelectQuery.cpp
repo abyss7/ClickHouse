@@ -812,7 +812,8 @@ void InterpreterSelectQuery::executeFetchColumns(
                 const auto default_it = column_defaults.find(column);
                 bool is_alias = default_it != std::end(column_defaults) && default_it->second.kind == ColumnDefaultKind::Alias;
                 if (is_alias)
-                    column_expr = setAlias(default_it->second.expression->clone(), column);
+                    // XXX(ilezhankin): looks like it's not internal
+                    column_expr = setInternalAlias(default_it->second.expression->clone(), column);
                 else
                     column_expr = std::make_shared<ASTIdentifier>(column);
 

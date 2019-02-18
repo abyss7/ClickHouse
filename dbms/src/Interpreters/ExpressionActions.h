@@ -7,6 +7,7 @@
 #include <Core/Names.h>
 #include <Core/ColumnWithTypeAndName.h>
 #include <Core/Block.h>
+#include <Parsers/IAST.h>
 
 #include <unordered_set>
 #include <unordered_map>
@@ -20,7 +21,7 @@ namespace ErrorCodes
     extern const int LOGICAL_ERROR;
 }
 
-using NameWithAlias = std::pair<std::string, std::string>;
+using NameWithAlias = std::pair<std::string /* name */, IAST::Alias>;
 using NamesWithAliases = std::vector<NameWithAlias>;
 
 class Join;

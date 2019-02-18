@@ -284,7 +284,7 @@ void ActionsVisitor::visit(const ASTPtr & ast)
                     ErrorCodes::NOT_AN_AGGREGATE);
 
             /// Special check for WITH statement alias. Add alias action to be able to use this alias.
-            if (identifier->prefer_alias_to_column_name && !identifier->alias.empty())
+            if (identifier->prefer_alias_to_column_name && identifier->tryGetAlias())
                 actions_stack.addAction(ExpressionAction::addAliases({{identifier->name, identifier->alias}}));
         }
     }

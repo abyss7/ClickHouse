@@ -88,8 +88,8 @@ void StorageView::replaceTableNameWithSubquery(ASTSelectQuery * select_query, AS
     table_expression->database_and_table_name = {};
     table_expression->subquery = std::make_shared<ASTSubquery>();
     table_expression->subquery->children.push_back(subquery);
-    if (!alias.empty())
-        table_expression->subquery->setAlias(alias);
+    if (alias)
+        table_expression->subquery->setAlias(*alias);
 }
 
 

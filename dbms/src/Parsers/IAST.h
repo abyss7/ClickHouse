@@ -38,6 +38,12 @@ class WriteBuffer;
 class IAST : public std::enable_shared_from_this<IAST>
 {
 public:
+    using Alias = struct
+    {
+        String name;
+        bool internal = true;
+    };
+
     ASTs children;
 
     virtual ~IAST() = default;
@@ -55,11 +61,11 @@ public:
     /** Get the alias, if any, or the canonical name of the column, if it is not. */
     virtual String getAliasOrColumnName() const { return getColumnName(); }
 
-    /** Get the alias, if any, or an empty string if it does not exist, or if the element does not support aliases. */
-    virtual String tryGetAlias() const { return String(); }
+    /** Get the alias, if any, or an empty optional if it does not exist, or if the element does not support aliases. */
+    virtual std::optional<Alias> tryGetAlias() const { return {}; }
 
     /** Set the alias. */
-    virtual void setAlias(const String & /*to*/)
+    virtual void setAlias(const Alias &)
     {
         throw Exception("Can't set alias of " + getColumnName(), ErrorCodes::UNKNOWN_TYPE_OF_AST_NODE);
     }

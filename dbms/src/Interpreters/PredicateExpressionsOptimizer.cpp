@@ -239,14 +239,13 @@ void PredicateExpressionsOptimizer::setNewAliasesForInnerPredicate(
                 String name;
                 if (auto * id = typeid_cast<const ASTIdentifier *>(ast.get()))
                 {
-                    name = id->tryGetAlias();
-                    if (name.empty())
-                        name = id->shortName();
+                    auto id_alias = id->tryGetAlias();
+                    name = id_alias ? id_alias->name : id->shortName();
                 }
                 else
                 {
-                    if (ast->tryGetAlias().empty())
-                        ast->setAlias(ast->getColumnName());
+                    if (!ast->tryGetAlias())
+                        ast->setAlias({ast->getColumnName(), true});
                     name = ast->getAliasOrColumnName();
                 }
 
@@ -300,9 +299,8 @@ PredicateExpressionsOptimizer::SubqueriesProjectionColumns PredicateExpressionsO
 
 void PredicateExpressionsOptimizer::getSubqueryProjectionColumns(const ASTPtr & subquery, SubqueriesProjectionColumns & projection_columns)
 {
-    String qualified_name_prefix = subquery->tryGetAlias();
-    if (!qualified_name_prefix.empty())
-        qualified_name_prefix += '.';
+    auto alias = subquery->tryGetAlias();
+    String qualified_name_prefix = alias ? alias->name + "." : "";
 
     const ASTPtr & subselect = subquery->children[0];
 
@@ -430,9 +428,7 @@ ASTs PredicateExpressionsOptimizer::evaluateAsterisk(ASTSelectQuery * select_que
 
 void PredicateExpressionsOptimizer::cleanExpressionAlias(ASTPtr & expression)
 {
-    const auto my_alias = expression->tryGetAlias();
-    if (!my_alias.empty())
-        expression->setAlias("");
+    expression->setAlias({});
 
     for (auto & child : expression->children)
         cleanExpressionAlias(child);

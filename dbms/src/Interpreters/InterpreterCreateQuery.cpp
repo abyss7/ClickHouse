@@ -222,13 +222,13 @@ static ColumnsDeclarationAndModifiers parseColumns(const ASTExpressionList & col
                 const auto tmp_column_name = final_column_name + "_tmp";
                 const auto data_type_ptr = columns.back().type.get();
 
-                default_expr_list->children.emplace_back(setAlias(
+                default_expr_list->children.emplace_back(setInternalAlias(
                     makeASTFunction("CAST", std::make_shared<ASTIdentifier>(tmp_column_name),
                         std::make_shared<ASTLiteral>(data_type_ptr->getName())), final_column_name));
-                default_expr_list->children.emplace_back(setAlias(col_decl.default_expression->clone(), tmp_column_name));
+                default_expr_list->children.emplace_back(setInternalAlias(col_decl.default_expression->clone(), tmp_column_name));
             }
             else
-                default_expr_list->children.emplace_back(setAlias(col_decl.default_expression->clone(), col_decl.name));
+                default_expr_list->children.emplace_back(setInternalAlias(col_decl.default_expression->clone(), col_decl.name));
         }
 
         if (col_decl.codec)

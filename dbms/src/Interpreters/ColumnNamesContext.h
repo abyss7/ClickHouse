@@ -19,9 +19,9 @@ struct ColumnNamesContext
         const ASTTableExpression * expr = nullptr;
         const ASTTableJoin * join = nullptr;
 
-        std::optional<String> alias() const
+        std::optional<IAST::Alias> alias() const
         {
-            String alias;
+            std::optional<IAST::Alias> alias;
             if (expr)
             {
                 if (expr->database_and_table_name)
@@ -31,7 +31,7 @@ struct ColumnNamesContext
                 else if (expr->subquery)
                     alias = expr->subquery->tryGetAlias();
             }
-            if (!alias.empty())
+            if (alias)
                 return alias;
             return {};
         }

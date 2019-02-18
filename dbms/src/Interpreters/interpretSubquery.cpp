@@ -113,7 +113,7 @@ std::shared_ptr<InterpreterSelectWithUnionQuery> interpretSubquery(
 
                         name = name + "_" + toString(i);
                         expr = expr->clone();   /// Cancels fuse of the same expressions in the tree.
-                        expr->setAlias(name);
+                        expr->setAlias({name, true});
 
                         all_column_names.insert(name);
                         assigned_column_names.insert(name);

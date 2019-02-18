@@ -1256,7 +1256,9 @@ bool ParserWithOptionalAlias::parseImpl(Pos & pos, ASTPtr & node, Expected & exp
     {
         if (ASTWithAlias * ast_with_alias = dynamic_cast<ASTWithAlias *>(node.get()))
         {
-            getIdentifierName(alias_node, ast_with_alias->alias);
+            String alias_name;
+            getIdentifierName(alias_node, alias_name);
+            ast_with_alias->setAlias({alias_name, false}); // FIXME(ilezhankin): is it really always user-specified?
             ast_with_alias->prefer_alias_to_column_name = prefer_alias_to_column_name;
         }
         else
@@ -1325,4 +1327,3 @@ bool ParserOrderByElement::parseImpl(Pos & pos, ASTPtr & node, Expected & expect
 }
 
 }
-
