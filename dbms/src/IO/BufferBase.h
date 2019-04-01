@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Core/Defines.h>
+#include <Common/TypePromotion.h>
+
 #include <algorithm>
 
 
@@ -25,7 +27,7 @@ namespace DB
   * Read/WriteBuffer can own or not own an own piece of memory.
   * In the second case, you can effectively read from an already existing piece of memory / std::string without copying it.
   */
-class BufferBase
+class BufferBase : public TypePromotion<BufferBase>
 {
 public:
     /** Cursor in the buffer. The position of write or read. */

@@ -33,12 +33,12 @@ private:
     {
         for (auto & column : block)
         {
-            if (auto * column_const = typeid_cast<const ColumnConst *>(column.column.get()))
+            if (const auto * column_const = column.column->as<ColumnConst>())
                 column.column = column_const->removeLowCardinality();
             else
                 column.column = column.column->convertToFullColumnIfLowCardinality();
 
-            if (auto * low_cardinality_type = typeid_cast<const DataTypeLowCardinality *>(column.type.get()))
+            if (const auto * low_cardinality_type = column.type->as<DataTypeLowCardinality>())
                 column.type = low_cardinality_type->getDictionaryType();
         }
 

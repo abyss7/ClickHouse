@@ -2,18 +2,17 @@
 
 #include "ConnectionParameters.h"
 
-#include <string>
-#include <sstream>
-#include <string.h>
-#include <vector>
 #include <algorithm>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <string.h>
 
-#include <ext/singleton.h>
 #include <common/readline_use.h>
+#include <ext/singleton.h>
 
-#include <Common/typeid_cast.h>
-#include <Columns/ColumnString.h>
 #include <Client/Connection.h>
+#include <Columns/ColumnString.h>
 
 
 namespace DB
@@ -152,7 +151,7 @@ private:
         if (block.columns() != 1)
             throw Exception("Wrong number of columns received for query to read words for suggestion", ErrorCodes::LOGICAL_ERROR);
 
-        const ColumnString & column = typeid_cast<const ColumnString &>(*block.getByPosition(0).column);
+        const auto & column = block.getByPosition(0).column->as<ColumnString &>();
 
         size_t rows = block.rows();
         for (size_t i = 0; i < rows; ++i)

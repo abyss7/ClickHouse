@@ -6,7 +6,6 @@
 #include <Core/Field.h>
 #include <Parsers/IAST.h>
 #include <Parsers/ASTLiteral.h>
-#include <Common/typeid_cast.h>
 #include <IO/WriteHelpers.h>
 
 

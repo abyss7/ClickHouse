@@ -1,4 +1,3 @@
-#include <Common/typeid_cast.h>
 #include <Common/ZooKeeper/ZooKeeper.h>
 #include <Common/ZooKeeper/KeeperException.h>
 #include <Common/StringUtils/StringUtils.h>
@@ -203,6 +202,3 @@ TEST(zkutil, multi_create_sequential)
         throw;
     }
 }
-
-
-

@@ -2,7 +2,6 @@
 #include <Storages/StorageCatBoostPool.h>
 #include <TableFunctions/TableFunctionFactory.h>
 #include <Parsers/ASTFunction.h>
-#include <Common/typeid_cast.h>
 #include <Parsers/ASTLiteral.h>
 
 

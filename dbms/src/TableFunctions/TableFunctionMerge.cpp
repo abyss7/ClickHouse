@@ -1,5 +1,4 @@
 #include <Common/OptimizedRegularExpression.h>
-#include <Common/typeid_cast.h>
 
 #include <Storages/StorageMerge.h>
 #include <Parsers/ASTExpressionList.h>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Common/typeid_cast.h>
 #include <Core/SortDescription.h>
 #include <Core/Block.h>
 #include <Columns/IColumn.h>
@@ -68,7 +67,7 @@ struct SortCursorImpl
 
             sort_columns.push_back(block.safeGetByPosition(column_number).column.get());
 
-            need_collation[j] = desc[j].collator != nullptr && typeid_cast<const ColumnString *>(sort_columns.back());    /// TODO Nullable(String)
+            need_collation[j] = desc[j].collator != nullptr && sort_columns.back()->as<ColumnString>();  /// TODO Nullable(String)
             has_collation |= need_collation[j];
         }
 

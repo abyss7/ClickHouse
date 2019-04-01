@@ -5,7 +5,6 @@
 #include <Common/hex.h>
 #include <IO/WriteHelpers.h>
 #include <IO/ReadBufferFromFileBase.h>
-#include <Common/typeid_cast.h>
 #include <Compression/CompressionFactory.h>
 #include <zstd.h>
 

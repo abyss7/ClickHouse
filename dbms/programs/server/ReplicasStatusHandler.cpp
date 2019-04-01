@@ -1,11 +1,10 @@
 #include "ReplicasStatusHandler.h"
 
+#include <Databases/IDatabase.h>
+#include <IO/HTTPCommon.h>
 #include <Interpreters/Context.h>
 #include <Storages/StorageReplicatedMergeTree.h>
 #include <Common/HTMLForm.h>
-#include <Common/typeid_cast.h>
-#include <Databases/IDatabase.h>
-#include <IO/HTTPCommon.h>
 
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>

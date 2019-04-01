@@ -1,6 +1,5 @@
 #include <AggregateFunctions/AggregateFunctionForEach.h>
 #include <AggregateFunctions/AggregateFunctionCombinatorFactory.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -21,7 +20,7 @@ public:
         DataTypes nested_arguments;
         for (const auto & type : arguments)
         {
-            if (const DataTypeArray * array = typeid_cast<const DataTypeArray *>(type.get()))
+            if (const auto * array = type->as<DataTypeArray>())
                 nested_arguments.push_back(array->getNestedType());
             else
                 throw Exception("Illegal type " + type->getName() + " of argument"

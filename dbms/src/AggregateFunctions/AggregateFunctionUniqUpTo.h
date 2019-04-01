@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Common/FieldVisitors.h>
-#include <Common/typeid_cast.h>
 
 #include <AggregateFunctions/IAggregateFunction.h>
 #include <AggregateFunctions/UniqVariadicHash.h>
@@ -201,7 +200,7 @@ public:
         , threshold(threshold)
     {
         if (argument_is_tuple)
-            num_args = typeid_cast<const DataTypeTuple &>(*arguments[0]).getElements().size();
+            num_args = arguments[0]->as<DataTypeTuple &>().getElements().size();
         else
             num_args = arguments.size();
     }

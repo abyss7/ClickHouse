@@ -10,7 +10,6 @@
 
 #include <DataStreams/MaterializingBlockInputStream.h>
 
-#include <Common/typeid_cast.h>
 #include <Interpreters/PredicateExpressionsOptimizer.h>
 #include <Parsers/ASTAsterisk.h>
 #include <iostream>

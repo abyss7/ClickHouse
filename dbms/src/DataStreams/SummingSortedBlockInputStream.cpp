@@ -9,7 +9,6 @@
 #include <Common/StringUtils/StringUtils.h>
 #include <Common/FieldVisitors.h>
 #include <common/logger_useful.h>
-#include <Common/typeid_cast.h>
 
 #include <AggregateFunctions/AggregateFunctionFactory.h>
 #include <Functions/FunctionFactory.h>
@@ -62,7 +61,7 @@ SummingSortedBlockInputStream::SummingSortedBlockInputStream(
         const ColumnWithTypeAndName & column = header.safeGetByPosition(i);
 
         /// Discover nested Maps and find columns for summation
-        if (typeid_cast<const DataTypeArray *>(column.type.get()))
+        if (column.type->as<DataTypeArray>())
         {
             const auto map_name = Nested::extractTableName(column.name);
             /// if nested table name ends with `Map` it is a possible candidate for special handling

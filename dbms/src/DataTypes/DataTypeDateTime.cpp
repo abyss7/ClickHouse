@@ -3,7 +3,6 @@
 #include <IO/parseDateTimeBestEffort.h>
 
 #include <common/DateLUT.h>
-#include <Common/typeid_cast.h>
 #include <Columns/ColumnsNumber.h>
 #include <Formats/FormatSettings.h>
 #include <Formats/ProtobufReader.h>

@@ -21,7 +21,6 @@
 #include <Common/UTF8Helpers.h>
 #include <Common/StringUtils/StringUtils.h>
 #include <Common/HashTable/HashMap.h>
-#include <Common/typeid_cast.h>
 #include <Core/Block.h>
 #include <common/StringRef.h>
 #include <common/DateLUT.h>
@@ -870,28 +869,28 @@ public:
                 return std::make_unique<SignedIntegerModel>(seed);
         }
 
-        if (typeid_cast<const DataTypeFloat32 *>(&data_type))
+        if (data_type.as<DataTypeFloat32>())
             return std::make_unique<FloatModel<Float32>>(seed);
 
-        if (typeid_cast<const DataTypeFloat64 *>(&data_type))
+        if (data_type.as<DataTypeFloat64>())
             return std::make_unique<FloatModel<Float64>>(seed);
 
-        if (typeid_cast<const DataTypeDate *>(&data_type))
+        if (data_type.as<DataTypeDate>())
             return std::make_unique<IdentityModel>();
 
-        if (typeid_cast<const DataTypeDateTime *>(&data_type))
+        if (data_type.as<DataTypeDateTime>())
             return std::make_unique<DateTimeModel>(seed);
 
-        if (typeid_cast<const DataTypeString *>(&data_type))
+        if (data_type.as<DataTypeString>())
             return std::make_unique<StringModel>(seed, markov_model_params);
 
-        if (typeid_cast<const DataTypeFixedString *>(&data_type))
+        if (data_type.as<DataTypeFixedString>())
             return std::make_unique<FixedStringModel>(seed);
 
-        if (auto type = typeid_cast<const DataTypeArray *>(&data_type))
+        if (const auto * type = data_type.as<DataTypeArray>())
             return std::make_unique<ArrayModel>(get(*type->getNestedType(), seed, markov_model_params));
 
-        if (auto type = typeid_cast<const DataTypeNullable *>(&data_type))
+        if (const auto * type = data_type.as<DataTypeNullable>())
             return std::make_unique<NullableModel>(get(*type->getNestedType(), seed, markov_model_params));
 
         throw Exception("Unsupported data type", ErrorCodes::NOT_IMPLEMENTED);

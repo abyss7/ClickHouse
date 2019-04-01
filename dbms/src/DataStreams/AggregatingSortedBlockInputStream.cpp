@@ -1,5 +1,4 @@
 #include <DataStreams/AggregatingSortedBlockInputStream.h>
-#include <Common/typeid_cast.h>
 #include <Common/StringUtils/StringUtils.h>
 
 
@@ -61,7 +60,7 @@ Block AggregatingSortedBlockInputStream::readImpl()
 
     columns_to_aggregate.resize(column_numbers_to_aggregate.size());
     for (size_t i = 0, size = columns_to_aggregate.size(); i < size; ++i)
-        columns_to_aggregate[i] = typeid_cast<ColumnAggregateFunction *>(merged_columns[column_numbers_to_aggregate[i]].get());
+        columns_to_aggregate[i] = merged_columns[column_numbers_to_aggregate[i]]->as<ColumnAggregateFunction>();
 
     merge(merged_columns, queue_without_collation);
     return header.cloneWithColumns(std::move(merged_columns));

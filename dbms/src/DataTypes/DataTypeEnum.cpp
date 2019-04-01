@@ -7,7 +7,6 @@
 #include <Parsers/IAST.h>
 #include <Parsers/ASTFunction.h>
 #include <Parsers/ASTLiteral.h>
-#include <Common/typeid_cast.h>
 #include <Common/UTF8Helpers.h>
 #include <Poco/UTF8Encoding.h>
 
@@ -204,7 +203,7 @@ template <typename Type>
 void DataTypeEnum<Type>::serializeBinaryBulk(
     const IColumn & column, WriteBuffer & ostr, const size_t offset, size_t limit) const
 {
-    const auto & x = typeid_cast<const ColumnType &>(column).getData();
+    const auto & x = column.as<ColumnType &>().getData();
     const auto size = x.size();
 
     if (limit == 0 || offset + limit > size)
@@ -217,7 +216,7 @@ template <typename Type>
 void DataTypeEnum<Type>::deserializeBinaryBulk(
     IColumn & column, ReadBuffer & istr, const size_t limit, const double /*avg_value_size_hint*/) const
 {
-    auto & x = typeid_cast<ColumnType &>(column).getData();
+    auto & x = column.as<ColumnType &>().getData();
     const auto initial_size = x.size();
     x.resize(initial_size + limit);
     const auto size = istr.readBig(reinterpret_cast<char*>(&x[initial_size]), sizeof(FieldType) * limit);

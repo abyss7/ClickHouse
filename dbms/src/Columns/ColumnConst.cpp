@@ -2,7 +2,6 @@
 
 #include <Columns/ColumnConst.h>
 #include <Columns/ColumnsCommon.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -17,7 +16,7 @@ ColumnConst::ColumnConst(const ColumnPtr & data_, size_t s)
     : data(data_), s(s)
 {
     /// Squash Const of Const.
-    while (const ColumnConst * const_data = typeid_cast<const ColumnConst *>(data.get()))
+    while (const auto * const_data = data->as<ColumnConst>())
         data = const_data->getDataColumnPtr();
 
     if (data->size() != 1)

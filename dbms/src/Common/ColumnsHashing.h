@@ -221,7 +221,7 @@ struct HashMethodSingleLowCardinalityColumn : public SingleColumnMethod
 
     static const ColumnLowCardinality & getLowCardinalityColumn(const IColumn * low_cardinality_column)
     {
-        auto column = typeid_cast<const ColumnLowCardinality *>(low_cardinality_column);
+        const auto * column = low_cardinality_column->as<ColumnLowCardinality>();
         if (!column)
             throw Exception("Invalid aggregation key type for HashMethodSingleLowCardinalityColumn method. "
                             "Excepted LowCardinality, got " + column->getName(), ErrorCodes::LOGICAL_ERROR);
@@ -241,7 +241,7 @@ struct HashMethodSingleLowCardinalityColumn : public SingleColumnMethod
         LowCardinalityDictionaryCache * cache;
         if constexpr (use_cache)
         {
-            cache = typeid_cast<LowCardinalityDictionaryCache *>(context.get());
+            cache = context->as<LowCardinalityDictionaryCache>();
             if (!cache)
             {
                 const auto & cached_val = *context;
@@ -475,7 +475,7 @@ struct HashMethodKeysFixed
             low_cardinality_keys.position_sizes.resize(key_columns.size());
             for (size_t i = 0; i < key_columns.size(); ++i)
             {
-                if (auto * low_cardinality_col = typeid_cast<const ColumnLowCardinality *>(key_columns[i]))
+                if (const auto * low_cardinality_col = key_columns[i]->as<ColumnLowCardinality>())
                 {
                     low_cardinality_keys.nested_columns[i] = low_cardinality_col->getDictionary().getNestedColumn().get();
                     low_cardinality_keys.positions[i] = &low_cardinality_col->getIndexes();

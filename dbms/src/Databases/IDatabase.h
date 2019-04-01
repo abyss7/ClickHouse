@@ -9,6 +9,7 @@
 #include <Poco/File.h>
 #include <Common/ThreadPool.h>
 #include <Common/escapeForFileName.h>
+#include <Common/typeid_cast.h>
 
 #include <ctime>
 #include <functional>
@@ -52,7 +53,7 @@ using DatabaseIteratorPtr = std::unique_ptr<IDatabaseIterator>;
   * - renaming tables and moving between databases with same engine.
   */
 
-class IDatabase : public std::enable_shared_from_this<IDatabase>
+class IDatabase : public std::enable_shared_from_this<IDatabase>, public TypePromotion<IDatabase>
 {
 public:
     /// Get name of database engine.

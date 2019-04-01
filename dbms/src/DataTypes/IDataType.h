@@ -1,9 +1,10 @@
 #pragma once
 
 #include <memory>
-#include <Common/COWPtr.h>
-#include <boost/noncopyable.hpp>
+
 #include <Core/Field.h>
+#include <Common/COWPtr.h>
+#include <Common/TypePromotion.h>
 
 
 namespace DB
@@ -34,11 +35,14 @@ class ProtobufWriter;
   *
   * DataType is totally immutable object. You can always share them.
   */
-class IDataType : private boost::noncopyable
+class IDataType : public TypePromotion<IDataType>
 {
 public:
     IDataType();
     virtual ~IDataType();
+
+    IDataType(const IDataType &) = delete;
+    IDataType & operator=(const IDataType &) = delete;
 
     /// Compile time flag. If false, then if C++ types are the same, then SQL types are also the same.
     /// Example: DataTypeString is not parametric: thus all instances of DataTypeString are the same SQL type.
@@ -619,4 +623,3 @@ inline bool isCompilableType(const DataTypePtr & data_type)
 
 
 }
-

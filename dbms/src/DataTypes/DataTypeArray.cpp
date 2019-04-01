@@ -13,8 +13,6 @@
 
 #include <Parsers/IAST.h>
 
-#include <Common/typeid_cast.h>
-
 
 namespace DB
 {
@@ -103,7 +101,7 @@ namespace
 {
     void serializeArraySizesPositionIndependent(const IColumn & column, WriteBuffer & ostr, UInt64 offset, UInt64 limit)
     {
-        const ColumnArray & column_array = typeid_cast<const ColumnArray &>(column);
+        const auto & column_array = column.as<ColumnArray &>();
         const ColumnArray::Offsets & offset_values = column_array.getOffsets();
         size_t size = offset_values.size();
 
@@ -125,7 +123,7 @@ namespace
 
     void deserializeArraySizesPositionIndependent(IColumn & column, ReadBuffer & istr, UInt64 limit)
     {
-        ColumnArray & column_array = typeid_cast<ColumnArray &>(column);
+        auto & column_array = column.as<ColumnArray>();
         ColumnArray::Offsets & offset_values = column_array.getOffsets();
         size_t initial_size = offset_values.size();
         offset_values.resize(initial_size + limit);
@@ -193,7 +191,7 @@ void DataTypeArray::serializeBinaryBulkWithMultipleStreams(
     SerializeBinaryBulkSettings & settings,
     SerializeBinaryBulkStatePtr & state) const
 {
-    const ColumnArray & column_array = typeid_cast<const ColumnArray &>(column);
+    const auto & column_array = column.as<ColumnArray>();
 
     /// First serialize array sizes.
     settings.path.push_back(Substream::ArraySizes);
@@ -239,7 +237,7 @@ void DataTypeArray::deserializeBinaryBulkWithMultipleStreams(
     DeserializeBinaryBulkSettings & settings,
     DeserializeBinaryBulkStatePtr & state) const
 {
-    ColumnArray & column_array = typeid_cast<ColumnArray &>(column);
+    auto & column_array = column.as<ColumnArray>();
 
     settings.path.push_back(Substream::ArraySizes);
     if (auto stream = settings.getter(settings.path))
@@ -500,7 +498,7 @@ bool DataTypeArray::equals(const IDataType & rhs) const
 
 size_t DataTypeArray::getNumberOfDimensions() const
 {
-    const DataTypeArray * nested_array = typeid_cast<const DataTypeArray *>(nested.get());
+    const auto * nested_array = nested->as<DataTypeArray>();
     if (!nested_array)
         return 1;
     return 1 + nested_array->getNumberOfDimensions();   /// Every modern C++ compiler optimizes tail recursion.

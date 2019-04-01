@@ -45,7 +45,7 @@ public:
 
     void deserializeText(IColumn & column, ReadBuffer & istr, const FormatSettings &) const override
     {
-        ColumnUInt32 * col = typeid_cast<ColumnUInt32 *>(&column);
+        auto * col = column.as<ColumnUInt32>();
         if (!col)
         {
             throw Exception(String(getName()) + " domain can only deserialize columns of type UInt32." + column.getName(), ErrorCodes::ILLEGAL_COLUMN);
@@ -88,7 +88,7 @@ public:
 
     void deserializeText(IColumn & column, ReadBuffer & istr, const FormatSettings &) const override
     {
-        ColumnFixedString * col = typeid_cast<ColumnFixedString *>(&column);
+        auto * col = column.as<ColumnFixedString>();
         if (!col)
         {
             throw Exception(String(getName()) + " domain can only deserialize columns of type FixedString(16)." + column.getName(), ErrorCodes::ILLEGAL_COLUMN);

@@ -1,7 +1,6 @@
 #pragma once
 #include <Columns/IColumn.h>
 #include <Columns/IColumnUnique.h>
-#include <Common/typeid_cast.h>
 #include <AggregateFunctions/AggregateFunctionCount.h>
 #include "ColumnsNumber.h"
 
@@ -135,7 +134,7 @@ public:
 
     bool structureEquals(const IColumn & rhs) const override
     {
-        if (auto rhs_low_cardinality = typeid_cast<const ColumnLowCardinality *>(&rhs))
+        if (const auto * rhs_low_cardinality = rhs.as<ColumnLowCardinality>())
             return idx.getPositions()->structureEquals(*rhs_low_cardinality->idx.getPositions())
                 && dictionary.getColumnUnique().structureEquals(rhs_low_cardinality->dictionary.getColumnUnique());
         return false;

@@ -6,7 +6,6 @@
 #include <Interpreters/Context.h>
 #include <Core/Settings.h>
 #include <Interpreters/ProfileEventsExt.h>
-#include <Common/typeid_cast.h>
 #include <Columns/ColumnsNumber.h>
 #include <Columns/ColumnArray.h>
 

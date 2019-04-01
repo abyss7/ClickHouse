@@ -1,5 +1,4 @@
 #include <sstream>
-#include <Common/typeid_cast.h>
 #include <DataTypes/DataTypesNumber.h>
 #include <Parsers/IAST.h>
 #include <Parsers/ASTFunction.h>

@@ -5,7 +5,6 @@
 #include <IO/ReadHelpers.h>
 #include <IO/WriteHelpers.h>
 #include <Columns/ColumnArray.h>
-#include <Common/typeid_cast.h>
 #include <string.h>
 
 
@@ -183,8 +182,8 @@ void Settings::serialize(WriteBuffer & buf) const
 void Settings::dumpToArrayColumns(IColumn * column_names_, IColumn * column_values_, bool changed_only)
 {
     /// Convert ptr and make simple check
-    auto column_names = (column_names_) ? &typeid_cast<ColumnArray &>(*column_names_) : nullptr;
-    auto column_values = (column_values_) ? &typeid_cast<ColumnArray &>(*column_values_) : nullptr;
+    auto * column_names = (column_names_) ? &column_names_->as<ColumnArray&>() : nullptr;
+    auto * column_values = (column_values_) ? &column_values_->as<ColumnArray&>() : nullptr;
 
     size_t size = 0;
 

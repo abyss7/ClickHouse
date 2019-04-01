@@ -5,7 +5,6 @@
 #include <DataTypes/DataTypeString.h>
 #include <DataTypes/DataTypeUUID.h>
 #include <DataTypes/DataTypesNumber.h>
-#include <Common/typeid_cast.h>
 #include <ext/range.h>
 
 
@@ -32,33 +31,33 @@ void ExternalResultDescription::init(const Block & sample_block_)
         DataTypePtr type_not_nullable = removeNullable(elem.type);
         const IDataType * type = type_not_nullable.get();
 
-        if (typeid_cast<const DataTypeUInt8 *>(type))
+        if (type->as<DataTypeUInt8>())
             types.emplace_back(ValueType::UInt8, is_nullable);
-        else if (typeid_cast<const DataTypeUInt16 *>(type))
+        else if (type->as<DataTypeUInt16>())
             types.emplace_back(ValueType::UInt16, is_nullable);
-        else if (typeid_cast<const DataTypeUInt32 *>(type))
+        else if (type->as<DataTypeUInt32>())
             types.emplace_back(ValueType::UInt32, is_nullable);
-        else if (typeid_cast<const DataTypeUInt64 *>(type))
+        else if (type->as<DataTypeUInt64>())
             types.emplace_back(ValueType::UInt64, is_nullable);
-        else if (typeid_cast<const DataTypeInt8 *>(type))
+        else if (type->as<DataTypeInt8>())
             types.emplace_back(ValueType::Int8, is_nullable);
-        else if (typeid_cast<const DataTypeInt16 *>(type))
+        else if (type->as<DataTypeInt16>())
             types.emplace_back(ValueType::Int16, is_nullable);
-        else if (typeid_cast<const DataTypeInt32 *>(type))
+        else if (type->as<DataTypeInt32>())
             types.emplace_back(ValueType::Int32, is_nullable);
-        else if (typeid_cast<const DataTypeInt64 *>(type))
+        else if (type->as<DataTypeInt64>())
             types.emplace_back(ValueType::Int64, is_nullable);
-        else if (typeid_cast<const DataTypeFloat32 *>(type))
+        else if (type->as<DataTypeFloat32>())
             types.emplace_back(ValueType::Float32, is_nullable);
-        else if (typeid_cast<const DataTypeFloat64 *>(type))
+        else if (type->as<DataTypeFloat64>())
             types.emplace_back(ValueType::Float64, is_nullable);
-        else if (typeid_cast<const DataTypeString *>(type))
+        else if (type->as<DataTypeString>())
             types.emplace_back(ValueType::String, is_nullable);
-        else if (typeid_cast<const DataTypeDate *>(type))
+        else if (type->as<DataTypeDate>())
             types.emplace_back(ValueType::Date, is_nullable);
-        else if (typeid_cast<const DataTypeDateTime *>(type))
+        else if (type->as<DataTypeDateTime>())
             types.emplace_back(ValueType::DateTime, is_nullable);
-        else if (typeid_cast<const DataTypeUUID *>(type))
+        else if (type->as<DataTypeUUID>())
             types.emplace_back(ValueType::UUID, is_nullable);
         else
             throw Exception{"Unsupported type " + type->getName(), ErrorCodes::UNKNOWN_TYPE};

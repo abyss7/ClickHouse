@@ -12,7 +12,7 @@ namespace
     template <typename T>
     PaddedPODArray<T> * getIndexesData(IColumn & indexes)
     {
-        auto * column = typeid_cast<ColumnVector<T> *>(&indexes);
+        auto * column = indexes.as<ColumnVector<T>>();
         if (column)
             return &column->getData();
 
@@ -129,7 +129,7 @@ void ColumnLowCardinality::insertDefault()
 
 void ColumnLowCardinality::insertFrom(const IColumn & src, size_t n)
 {
-    auto * low_cardinality_src = typeid_cast<const ColumnLowCardinality *>(&src);
+    const auto * low_cardinality_src = src.as<ColumnLowCardinality>();
 
     if (!low_cardinality_src)
         throw Exception("Expected ColumnLowCardinality, got" + src.getName(), ErrorCodes::ILLEGAL_COLUMN);
@@ -160,7 +160,7 @@ void ColumnLowCardinality::insertFromFullColumn(const IColumn & src, size_t n)
 
 void ColumnLowCardinality::insertRangeFrom(const IColumn & src, size_t start, size_t length)
 {
-    auto * low_cardinality_src = typeid_cast<const ColumnLowCardinality *>(&src);
+    const auto * low_cardinality_src = src.as<ColumnLowCardinality>();
 
     if (!low_cardinality_src)
         throw Exception("Expected ColumnLowCardinality, got " + src.getName(), ErrorCodes::ILLEGAL_COLUMN);
@@ -393,7 +393,7 @@ void ColumnLowCardinality::Index::callForType(Callback && callback, size_t size_
 
 size_t ColumnLowCardinality::Index::getSizeOfIndexType(const IColumn & column, size_t hint)
 {
-    auto checkFor = [&](auto type) { return typeid_cast<const ColumnVector<decltype(type)> *>(&column) != nullptr; };
+    auto checkFor = [&](auto type) { return column.as<ColumnVector<decltype(type)>>() != nullptr; };
     auto tryGetSizeFor = [&](auto type) -> size_t { return checkFor(type) ? sizeof(decltype(type)) : 0; };
 
     if (hint)
@@ -427,7 +427,7 @@ void ColumnLowCardinality::Index::attachPositions(ColumnPtr positions_)
 template <typename IndexType>
 typename ColumnVector<IndexType>::Container & ColumnLowCardinality::Index::getPositionsData()
 {
-    auto * positions_ptr = typeid_cast<ColumnVector<IndexType> *>(positions->assumeMutable().get());
+    auto * positions_ptr = positions->assumeMutable()->as<ColumnVector<IndexType>>();
     if (!positions_ptr)
         throw Exception("Invalid indexes type for ColumnLowCardinality."
                         " Expected UInt" + toString(8 * sizeof(IndexType)) + ", got " + positions->getName(),
@@ -439,7 +439,7 @@ typename ColumnVector<IndexType>::Container & ColumnLowCardinality::Index::getPo
 template <typename IndexType>
 const typename ColumnVector<IndexType>::Container & ColumnLowCardinality::Index::getPositionsData() const
 {
-    const auto * positions_ptr = typeid_cast<const ColumnVector<IndexType> *>(positions.get());
+    const auto * positions_ptr = positions->as<ColumnVector<IndexType>>();
     if (!positions_ptr)
         throw Exception("Invalid indexes type for ColumnLowCardinality."
                         " Expected UInt" + toString(8 * sizeof(IndexType)) + ", got " + positions->getName(),
@@ -531,7 +531,7 @@ void ColumnLowCardinality::Index::insertPositionsRange(const IColumn & column, U
     auto insertForType = [&](auto type)
     {
         using ColumnType = decltype(type);
-        const auto * column_ptr = typeid_cast<const ColumnVector<ColumnType> *>(&column);
+        const auto * column_ptr = column.as<ColumnVector<ColumnType>>();
 
         if (!column_ptr)
             return false;

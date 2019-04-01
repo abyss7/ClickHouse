@@ -3,7 +3,6 @@
 #include <Common/CombinedCardinalityEstimator.h>
 #include <Common/FieldVisitors.h>
 #include <Common/SipHash.h>
-#include <Common/typeid_cast.h>
 
 #include <DataTypes/DataTypeTuple.h>
 #include <DataTypes/DataTypeUUID.h>
@@ -184,7 +183,7 @@ public:
             AggregateFunctionUniqCombinedVariadic<is_exact, argument_is_tuple, K>>(arguments, params)
     {
         if (argument_is_tuple)
-            num_args = typeid_cast<const DataTypeTuple &>(*arguments[0]).getElements().size();
+            num_args = arguments[0]->as<DataTypeTuple &>().getElements().size();
         else
             num_args = arguments.size();
     }

@@ -3,6 +3,8 @@
 #include <Columns/IColumn.h>
 #include <Interpreters/AggregationCommon.h>
 
+#include <Common/typeid_cast.h>
+
 namespace DB
 {
 
@@ -11,7 +13,7 @@ namespace ColumnsHashing
 
 /// Generic context for HashMethod. Context is shared between multiple threads, all methods must be thread-safe.
 /// Is used for caching.
-class HashMethodContext
+class HashMethodContext : public TypePromotion<HashMethodContext>
 {
 public:
     virtual ~HashMethodContext() = default;

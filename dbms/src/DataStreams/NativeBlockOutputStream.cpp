@@ -8,7 +8,6 @@
 #include <DataStreams/MarkInCompressedFile.h>
 #include <DataStreams/NativeBlockOutputStream.h>
 
-#include <Common/typeid_cast.h>
 #include <DataTypes/DataTypeLowCardinality.h>
 
 namespace DB
@@ -28,7 +27,7 @@ NativeBlockOutputStream::NativeBlockOutputStream(
 {
     if (index_ostr)
     {
-        ostr_concrete = typeid_cast<CompressedWriteBuffer *>(&ostr);
+        ostr_concrete = ostr.as<CompressedWriteBuffer>();
         if (!ostr_concrete)
             throw Exception("When need to write index for NativeBlockOutputStream, ostr must be CompressedWriteBuffer.", ErrorCodes::LOGICAL_ERROR);
     }

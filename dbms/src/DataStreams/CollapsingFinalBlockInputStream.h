@@ -3,7 +3,6 @@
 #include <DataStreams/IBlockInputStream.h>
 #include <Core/SortDescription.h>
 #include <Columns/ColumnsNumber.h>
-#include <Common/typeid_cast.h>
 #include <queue>
 
 namespace DB
@@ -61,7 +60,7 @@ private:
 
             const IColumn * sign_icolumn = block.getByName(sign_column_name).column.get();
 
-            sign_column = typeid_cast<const ColumnInt8 *>(sign_icolumn);
+            sign_column = sign_icolumn->as<ColumnInt8>();
 
             if (!sign_column)
                 throw Exception("Sign column must have type Int8", ErrorCodes::BAD_TYPE_OF_FIELD);

@@ -7,7 +7,6 @@
 #include <Databases/DatabaseOrdinary.h>
 #include <Databases/DatabaseMemory.h>
 #include <Databases/DatabasesCommon.h>
-#include <Common/typeid_cast.h>
 #include <Common/escapeForFileName.h>
 #include <Common/StringUtils/StringUtils.h>
 #include <Common/Stopwatch.h>
@@ -385,7 +384,7 @@ void DatabaseOrdinary::renameTable(
     IDatabase & to_database,
     const String & to_table_name)
 {
-    DatabaseOrdinary * to_database_concrete = typeid_cast<DatabaseOrdinary *>(&to_database);
+    auto * to_database_concrete = to_database.as<DatabaseOrdinary>();
 
     if (!to_database_concrete)
         throw Exception("Moving tables between databases of different engines is not supported", ErrorCodes::NOT_IMPLEMENTED);

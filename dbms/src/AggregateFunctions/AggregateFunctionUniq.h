@@ -17,7 +17,6 @@
 #include <Common/HyperLogLogWithSmallSetOptimization.h>
 #include <Common/CombinedCardinalityEstimator.h>
 #include <Common/MemoryTracker.h>
-#include <Common/typeid_cast.h>
 
 #include <AggregateFunctions/UniquesHashSet.h>
 #include <AggregateFunctions/IAggregateFunction.h>
@@ -263,7 +262,7 @@ public:
         : IAggregateFunctionDataHelper<Data, AggregateFunctionUniqVariadic<Data, is_exact, argument_is_tuple>>(arguments, {})
     {
         if (argument_is_tuple)
-            num_args = typeid_cast<const DataTypeTuple &>(*arguments[0]).getElements().size();
+            num_args = arguments[0]->as<DataTypeTuple &>().getElements().size();
         else
             num_args = arguments.size();
     }

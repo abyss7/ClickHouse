@@ -1,4 +1,3 @@
-#include <Common/typeid_cast.h>
 #include <Functions/FunctionHelpers.h>
 #include <Interpreters/ExpressionActions.h>
 #include <Interpreters/evaluateMissingDefaults.h>
@@ -140,7 +139,7 @@ void AddingDefaultsBlockInputStream::mixNumberColumns(TypeIndex type_idx, Mutabl
             using FieldType = typename DataType::FieldType;
             using ColVecType = std::conditional_t<IsDecimalNumber<FieldType>, ColumnDecimal<FieldType>, ColumnVector<FieldType>>;
 
-            auto col_read = typeid_cast<ColVecType *>(column_mixed.get());
+            auto * col_read = column_mixed->as<ColVecType>();
             if (!col_read)
                 return false;
 

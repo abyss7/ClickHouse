@@ -3,7 +3,6 @@
 #include <Columns/ColumnConst.h>
 #include <Columns/FilterDescription.h>
 #include <Interpreters/ExpressionActions.h>
-#include <Common/typeid_cast.h>
 
 #include <DataStreams/FilterBlockInputStream.h>
 

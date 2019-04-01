@@ -4,7 +4,6 @@
 
 #include <Columns/IColumn.h>
 #include <Columns/ColumnVector.h>
-#include <Common/typeid_cast.h>
 #include <Common/HashTable/HashSet.h>
 #include <Common/HashTable/HashMap.h>
 
@@ -317,8 +316,8 @@ namespace detail
     template <typename T>
     const PaddedPODArray<T> * getIndexesData(const IColumn & indexes)
     {
-        auto * column = typeid_cast<const ColumnVector<T> *>(&indexes);
-        if (column)
+
+        if (const auto * column = indexes.as<ColumnVector<T>>())
             return &column->getData();
 
         return nullptr;

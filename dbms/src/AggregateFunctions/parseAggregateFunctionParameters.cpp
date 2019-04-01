@@ -1,7 +1,6 @@
 #include <AggregateFunctions/parseAggregateFunctionParameters.h>
 #include <Parsers/ExpressionListParsers.h>
 #include <Parsers/parseQuery.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB

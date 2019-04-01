@@ -8,7 +8,6 @@
 #include <Storages/System/StorageSystemReplicationQueue.h>
 #include <Storages/StorageReplicatedMergeTree.h>
 #include <Storages/VirtualColumnUtils.h>
-#include <Common/typeid_cast.h>
 #include <Databases/IDatabase.h>
 
 

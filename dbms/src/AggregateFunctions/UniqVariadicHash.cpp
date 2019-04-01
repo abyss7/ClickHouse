@@ -1,6 +1,5 @@
 #include <AggregateFunctions/UniqVariadicHash.h>
 #include <DataTypes/DataTypeTuple.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -21,7 +20,7 @@ bool isAllArgumentsContiguousInMemory(const DataTypes & argument_types)
 
     const DataTypeTuple * single_argument_as_tuple = nullptr;
     if (argument_types.size() == 1)
-        single_argument_as_tuple = typeid_cast<const DataTypeTuple *>(argument_types[0].get());
+        single_argument_as_tuple = argument_types[0]->as<DataTypeTuple>();
 
     if (single_argument_as_tuple)
         return check_all_arguments_are_contiguous_in_memory(single_argument_as_tuple->getElements());

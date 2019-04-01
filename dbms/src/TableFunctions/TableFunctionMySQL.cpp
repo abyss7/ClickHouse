@@ -18,7 +18,6 @@
 #include <Core/Defines.h>
 #include <Common/Exception.h>
 #include <Common/parseAddress.h>
-#include <Common/typeid_cast.h>
 #include <IO/WriteBufferFromString.h>
 #include <IO/Operators.h>
 

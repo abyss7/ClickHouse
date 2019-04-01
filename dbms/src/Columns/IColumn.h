@@ -2,8 +2,9 @@
 
 #include <Core/Field.h>
 #include <Common/COWPtr.h>
-#include <Common/PODArray.h>
 #include <Common/Exception.h>
+#include <Common/PODArray.h>
+#include <Common/TypePromotion.h>
 #include <common/StringRef.h>
 
 
@@ -24,7 +25,7 @@ class Arena;
 class ColumnGathererStream;
 
 /// Declares interface to store columns in memory.
-class IColumn : public COWPtr<IColumn>
+class IColumn : public COWPtr<IColumn>, public TypePromotion<IColumn>
 {
 private:
     friend class COWPtr<IColumn>;

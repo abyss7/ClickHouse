@@ -1,7 +1,6 @@
 #include <DataStreams/finalizeBlock.h>
 #include <DataTypes/DataTypeAggregateFunction.h>
 #include <Columns/ColumnAggregateFunction.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -11,13 +10,13 @@ namespace DB
         for (size_t i = 0; i < block.columns(); ++i)
         {
             ColumnWithTypeAndName & current = block.getByPosition(i);
-            const DataTypeAggregateFunction * unfinalized_type = typeid_cast<const DataTypeAggregateFunction *>(current.type.get());
+            const auto * unfinalized_type = current.type->as<DataTypeAggregateFunction>();
 
             if (unfinalized_type)
             {
                 current.type = unfinalized_type->getReturnType();
                 if (current.column)
-                    current.column = typeid_cast<const ColumnAggregateFunction &>(*current.column).convertToValues();
+                    current.column = current.column->as<ColumnAggregateFunction&>().convertToValues();
             }
         }
     }

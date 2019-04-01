@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include <Common/typeid_cast.h>
 #include <Columns/IColumn.h>
 #include <Columns/ColumnVectorHelper.h>
 
@@ -136,7 +135,7 @@ public:
 
     bool structureEquals(const IColumn & rhs) const override
     {
-        if (auto rhs_concrete = typeid_cast<const ColumnDecimal<T> *>(&rhs))
+        if (const auto * rhs_concrete = rhs.as<ColumnDecimal<T>>())
             return scale == rhs_concrete->scale;
         return false;
     }

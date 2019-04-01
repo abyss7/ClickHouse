@@ -2,12 +2,13 @@
 
 #include <cstddef>
 #include <memory>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
-#include <Core/Types.h>
 #include <Core/Field.h>
+#include <Core/Types.h>
 #include <Common/Exception.h>
+#include <Common/TypePromotion.h>
 
 
 namespace DB
@@ -34,7 +35,7 @@ using ConstAggregateDataPtr = const char *;
   *  (which can be created in some memory pool),
   *  and IAggregateFunction is the external interface for manipulating them.
   */
-class IAggregateFunction
+class IAggregateFunction : public TypePromotion<IAggregateFunction>
 {
 public:
     IAggregateFunction(const DataTypes & argument_types_, const Array & parameters_)

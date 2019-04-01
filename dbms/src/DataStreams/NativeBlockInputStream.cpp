@@ -5,7 +5,6 @@
 #include <Compression/CompressedReadBufferFromFile.h>
 
 #include <DataTypes/DataTypeFactory.h>
-#include <Common/typeid_cast.h>
 #include <ext/range.h>
 
 #include <DataStreams/NativeBlockInputStream.h>
@@ -40,7 +39,7 @@ NativeBlockInputStream::NativeBlockInputStream(ReadBuffer & istr_, UInt64 server
     : istr(istr_), server_revision(server_revision_),
     use_index(true), index_block_it(index_block_it_), index_block_end(index_block_end_)
 {
-    istr_concrete = typeid_cast<CompressedReadBufferFromFile *>(&istr);
+    istr_concrete = istr.as<CompressedReadBufferFromFile>();
     if (!istr_concrete)
         throw Exception("When need to use index for NativeBlockInputStream, istr must be CompressedReadBufferFromFile.", ErrorCodes::LOGICAL_ERROR);
 

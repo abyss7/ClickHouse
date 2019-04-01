@@ -5,7 +5,7 @@
 namespace DB
 {
 
-/* This base class adds public methods:
+/** This base class adds public methods:
  *  -       Derived * as<Derived>()
  *  - const Derived * as<Derived>() const
  *  -       Derived & as<Derived &>()

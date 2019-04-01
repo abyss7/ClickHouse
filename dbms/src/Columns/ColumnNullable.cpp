@@ -1,7 +1,6 @@
 #include <Common/Arena.h>
 #include <Common/SipHash.h>
 #include <Common/NaNUtils.h>
-#include <Common/typeid_cast.h>
 #include <Columns/ColumnNullable.h>
 #include <Columns/ColumnConst.h>
 #include <DataStreams/ColumnGathererStream.h>
@@ -373,25 +372,25 @@ void ColumnNullable::getExtremes(Field & min, Field & max) const
 
     const auto & null_map_data = getNullMapData();
 
-    if (const auto col_i8 = typeid_cast<const ColumnInt8 *>(nested_column.get()))
+    if (const auto * col_i8 = nested_column->as<ColumnInt8>())
         getExtremesFromNullableContent<Int8>(*col_i8, null_map_data, min, max);
-    else if (const auto col_i16 = typeid_cast<const ColumnInt16 *>(nested_column.get()))
+    else if (const auto * col_i16 = nested_column->as<ColumnInt16>())
         getExtremesFromNullableContent<Int16>(*col_i16, null_map_data, min, max);
-    else if (const auto col_i32 = typeid_cast<const ColumnInt32 *>(nested_column.get()))
+    else if (const auto * col_i32 = nested_column->as<ColumnInt32>())
         getExtremesFromNullableContent<Int32>(*col_i32, null_map_data, min, max);
-    else if (const auto col_i64 = typeid_cast<const ColumnInt64 *>(nested_column.get()))
+    else if (const auto * col_i64 = nested_column->as<ColumnInt64>())
         getExtremesFromNullableContent<Int64>(*col_i64, null_map_data, min, max);
-    else if (const auto col_u8 = typeid_cast<const ColumnUInt8 *>(nested_column.get()))
+    else if (const auto * col_u8 = nested_column->as<ColumnUInt8>())
         getExtremesFromNullableContent<UInt8>(*col_u8, null_map_data, min, max);
-    else if (const auto col_u16 = typeid_cast<const ColumnUInt16 *>(nested_column.get()))
+    else if (const auto * col_u16 = nested_column->as<ColumnUInt16>())
         getExtremesFromNullableContent<UInt16>(*col_u16, null_map_data, min, max);
-    else if (const auto col_u32 = typeid_cast<const ColumnUInt32 *>(nested_column.get()))
+    else if (const auto * col_u32 = nested_column->as<ColumnUInt32>())
         getExtremesFromNullableContent<UInt32>(*col_u32, null_map_data, min, max);
-    else if (const auto col_u64 = typeid_cast<const ColumnUInt64 *>(nested_column.get()))
+    else if (const auto * col_u64 = nested_column->as<ColumnUInt64>())
         getExtremesFromNullableContent<UInt64>(*col_u64, null_map_data, min, max);
-    else if (const auto col_f32 = typeid_cast<const ColumnFloat32 *>(nested_column.get()))
+    else if (const auto * col_f32 = nested_column->as<ColumnFloat32>())
         getExtremesFromNullableContent<Float32>(*col_f32, null_map_data, min, max);
-    else if (const auto col_f64 = typeid_cast<const ColumnFloat64 *>(nested_column.get()))
+    else if (const auto * col_f64 = nested_column->as<ColumnFloat64>())
         getExtremesFromNullableContent<Float64>(*col_f64, null_map_data, min, max);
 }
 

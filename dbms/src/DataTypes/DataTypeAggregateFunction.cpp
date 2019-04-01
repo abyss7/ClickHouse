@@ -5,7 +5,6 @@
 
 #include <Columns/ColumnAggregateFunction.h>
 
-#include <Common/typeid_cast.h>
 #include <Common/AlignedBuffer.h>
 
 #include <Formats/FormatSettings.h>
@@ -103,7 +102,7 @@ void DataTypeAggregateFunction::deserializeBinary(IColumn & column, ReadBuffer &
 
 void DataTypeAggregateFunction::serializeBinaryBulk(const IColumn & column, WriteBuffer & ostr, size_t offset, size_t limit) const
 {
-    const ColumnAggregateFunction & real_column = typeid_cast<const ColumnAggregateFunction &>(column);
+    const auto & real_column = column.as<ColumnAggregateFunction>();
     const ColumnAggregateFunction::Container & vec = real_column.getData();
 
     ColumnAggregateFunction::Container::const_iterator it = vec.begin() + offset;
@@ -118,7 +117,7 @@ void DataTypeAggregateFunction::serializeBinaryBulk(const IColumn & column, Writ
 
 void DataTypeAggregateFunction::deserializeBinaryBulk(IColumn & column, ReadBuffer & istr, size_t limit, double /*avg_value_size_hint*/) const
 {
-    ColumnAggregateFunction & real_column = typeid_cast<ColumnAggregateFunction &>(column);
+    auto & real_column = column.as<ColumnAggregateFunction &>();
     ColumnAggregateFunction::Container & vec = real_column.getData();
 
     Arena & arena = real_column.createOrGetArena();

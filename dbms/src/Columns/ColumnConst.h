@@ -3,7 +3,6 @@
 #include <Core/Field.h>
 #include <Common/Exception.h>
 #include <Columns/IColumn.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -192,7 +191,7 @@ public:
 
     bool structureEquals(const IColumn & rhs) const override
     {
-        if (auto rhs_concrete = typeid_cast<const ColumnConst *>(&rhs))
+        if (auto * rhs_concrete = rhs.as<ColumnConst>())
             return data->structureEquals(*rhs_concrete->data);
         return false;
     }

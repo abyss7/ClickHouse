@@ -3,7 +3,6 @@
 #include <Parsers/ASTFunction.h>
 #include <Parsers/ASTLiteral.h>
 #include <Common/Exception.h>
-#include <Common/typeid_cast.h>
 #include <Storages/StorageFile.h>
 #include <DataTypes/DataTypeFactory.h>
 #include <Interpreters/Context.h>

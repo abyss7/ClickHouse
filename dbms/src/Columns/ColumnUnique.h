@@ -10,7 +10,6 @@
 #include <DataTypes/DataTypeNullable.h>
 #include <DataTypes/NumberTraits.h>
 
-#include <Common/typeid_cast.h>
 #include <ext/range.h>
 
 #include <common/unaligned.h>
@@ -97,7 +96,7 @@ public:
 
     bool structureEquals(const IColumn & rhs) const override
     {
-        if (auto rhs_concrete = typeid_cast<const ColumnUnique *>(&rhs))
+        if (const auto * rhs_concrete = rhs.as<ColumnUnique>())
             return column_holder->structureEquals(*rhs_concrete->column_holder);
         return false;
     }
@@ -271,7 +270,7 @@ size_t ColumnUnique<ColumnType>::uniqueInsertFrom(const IColumn & src, size_t n)
     if (is_nullable && src.isNullAt(n))
         return getNullValueIndex();
 
-    if (auto * nullable = typeid_cast<const ColumnNullable *>(&src))
+    if (const auto * nullable = src.as<ColumnNullable>())
         return uniqueInsertFrom(nullable->getNestedColumn(), n);
 
     auto ref = src.getDataAt(n);
@@ -430,13 +429,13 @@ MutableColumnPtr ColumnUnique<ColumnType>::uniqueInsertRangeImpl(
         return nullptr;
     };
 
-    if (auto nullable_column = typeid_cast<const ColumnNullable *>(&src))
+    if (const auto * nullable_column = src.as<ColumnNullable>())
     {
-        src_column = typeid_cast<const ColumnType *>(&nullable_column->getNestedColumn());
+        src_column = nullable_column->getNestedColumn().as<ColumnType>();
         null_map = &nullable_column->getNullMapData();
     }
     else
-        src_column = typeid_cast<const ColumnType *>(&src);
+        src_column = src.as<ColumnType>();
 
     if (src_column == nullptr)
         throw Exception("Invalid column type for ColumnUnique::insertRangeFrom. Expected " + column_holder->getName() +
@@ -533,7 +532,7 @@ IColumnUnique::IndexesWithOverflow ColumnUnique<ColumnType>::uniqueInsertRangeWi
     size_t max_dictionary_size)
 {
     auto overflowed_keys = column_holder->cloneEmpty();
-    auto overflowed_keys_ptr = typeid_cast<ColumnType *>(overflowed_keys.get());
+    auto * overflowed_keys_ptr = overflowed_keys->template as<ColumnType>();
     if (!overflowed_keys_ptr)
         throw Exception("Invalid keys type for ColumnUnique.", ErrorCodes::LOGICAL_ERROR);
 

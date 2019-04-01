@@ -15,8 +15,6 @@
 #include <Common/Exception.h>
 #include <Common/Arena.h>
 #include <Common/SipHash.h>
-#include <Common/typeid_cast.h>
-
 
 
 namespace DB
@@ -36,7 +34,7 @@ namespace ErrorCodes
 ColumnArray::ColumnArray(MutableColumnPtr && nested_column, MutableColumnPtr && offsets_column)
     : data(std::move(nested_column)), offsets(std::move(offsets_column))
 {
-    if (!typeid_cast<const ColumnOffsets *>(offsets.get()))
+    if (!offsets->as<ColumnOffsets>())
         throw Exception("offsets_column must be a ColumnUInt64", ErrorCodes::ILLEGAL_COLUMN);
 
     /** NOTE
@@ -400,19 +398,32 @@ void ColumnArray::insertRangeFrom(const IColumn & src, size_t start, size_t leng
 
 ColumnPtr ColumnArray::filter(const Filter & filt, ssize_t result_size_hint) const
 {
-    if (typeid_cast<const ColumnUInt8 *>(data.get()))      return filterNumber<UInt8>(filt, result_size_hint);
-    if (typeid_cast<const ColumnUInt16 *>(data.get()))     return filterNumber<UInt16>(filt, result_size_hint);
-    if (typeid_cast<const ColumnUInt32 *>(data.get()))     return filterNumber<UInt32>(filt, result_size_hint);
-    if (typeid_cast<const ColumnUInt64 *>(data.get()))     return filterNumber<UInt64>(filt, result_size_hint);
-    if (typeid_cast<const ColumnInt8 *>(data.get()))       return filterNumber<Int8>(filt, result_size_hint);
-    if (typeid_cast<const ColumnInt16 *>(data.get()))      return filterNumber<Int16>(filt, result_size_hint);
-    if (typeid_cast<const ColumnInt32 *>(data.get()))      return filterNumber<Int32>(filt, result_size_hint);
-    if (typeid_cast<const ColumnInt64 *>(data.get()))      return filterNumber<Int64>(filt, result_size_hint);
-    if (typeid_cast<const ColumnFloat32 *>(data.get()))    return filterNumber<Float32>(filt, result_size_hint);
-    if (typeid_cast<const ColumnFloat64 *>(data.get()))    return filterNumber<Float64>(filt, result_size_hint);
-    if (typeid_cast<const ColumnString *>(data.get()))     return filterString(filt, result_size_hint);
-    if (typeid_cast<const ColumnTuple *>(data.get()))      return filterTuple(filt, result_size_hint);
-    if (typeid_cast<const ColumnNullable *>(data.get()))   return filterNullable(filt, result_size_hint);
+    if (data->as<ColumnUInt8>())
+        return filterNumber<UInt8>(filt, result_size_hint);
+    if (data->as<ColumnUInt16>())
+        return filterNumber<UInt16>(filt, result_size_hint);
+    if (data->as<ColumnUInt32>())
+        return filterNumber<UInt32>(filt, result_size_hint);
+    if (data->as<ColumnUInt64>())
+        return filterNumber<UInt64>(filt, result_size_hint);
+    if (data->as<ColumnInt8>())
+        return filterNumber<Int8>(filt, result_size_hint);
+    if (data->as<ColumnInt16>())
+        return filterNumber<Int16>(filt, result_size_hint);
+    if (data->as<ColumnInt32>())
+        return filterNumber<Int32>(filt, result_size_hint);
+    if (data->as<ColumnInt64>())
+        return filterNumber<Int64>(filt, result_size_hint);
+    if (data->as<ColumnFloat32>())
+        return filterNumber<Float32>(filt, result_size_hint);
+    if (data->as<ColumnFloat64>())
+        return filterNumber<Float64>(filt, result_size_hint);
+    if (data->as<ColumnString>())
+        return filterString(filt, result_size_hint);
+    if (data->as<ColumnTuple>())
+        return filterTuple(filt, result_size_hint);
+    if (data->as<ColumnNullable>())
+        return filterNullable(filt, result_size_hint);
     return filterGeneric(filt, result_size_hint);
 }
 
@@ -442,13 +453,13 @@ ColumnPtr ColumnArray::filterString(const Filter & filt, ssize_t result_size_hin
 
     auto res = ColumnArray::create(data->cloneEmpty());
 
-    const ColumnString & src_string = typeid_cast<const ColumnString &>(*data);
+    const auto & src_string = data->as<ColumnString &>();
     const ColumnString::Chars & src_chars = src_string.getChars();
     const Offsets & src_string_offsets = src_string.getOffsets();
     const Offsets & src_offsets = getOffsets();
 
-    ColumnString::Chars & res_chars = typeid_cast<ColumnString &>(res->getData()).getChars();
-    Offsets & res_string_offsets = typeid_cast<ColumnString &>(res->getData()).getOffsets();
+    ColumnString::Chars & res_chars = res->getData().as<ColumnString &>().getChars();
+    Offsets & res_string_offsets = res->getData().as<ColumnString &>().getOffsets();
     Offsets & res_offsets = res->getOffsets();
 
     if (result_size_hint < 0)    /// Other cases are not considered.
@@ -703,20 +714,34 @@ ColumnPtr ColumnArray::replicate(const Offsets & replicate_offsets) const
     if (replicate_offsets.empty())
         return cloneEmpty();
 
-    if (typeid_cast<const ColumnUInt8 *>(data.get()))    return replicateNumber<UInt8>(replicate_offsets);
-    if (typeid_cast<const ColumnUInt16 *>(data.get()))   return replicateNumber<UInt16>(replicate_offsets);
-    if (typeid_cast<const ColumnUInt32 *>(data.get()))   return replicateNumber<UInt32>(replicate_offsets);
-    if (typeid_cast<const ColumnUInt64 *>(data.get()))   return replicateNumber<UInt64>(replicate_offsets);
-    if (typeid_cast<const ColumnInt8 *>(data.get()))     return replicateNumber<Int8>(replicate_offsets);
-    if (typeid_cast<const ColumnInt16 *>(data.get()))    return replicateNumber<Int16>(replicate_offsets);
-    if (typeid_cast<const ColumnInt32 *>(data.get()))    return replicateNumber<Int32>(replicate_offsets);
-    if (typeid_cast<const ColumnInt64 *>(data.get()))    return replicateNumber<Int64>(replicate_offsets);
-    if (typeid_cast<const ColumnFloat32 *>(data.get()))  return replicateNumber<Float32>(replicate_offsets);
-    if (typeid_cast<const ColumnFloat64 *>(data.get()))  return replicateNumber<Float64>(replicate_offsets);
-    if (typeid_cast<const ColumnString *>(data.get()))   return replicateString(replicate_offsets);
-    if (typeid_cast<const ColumnConst *>(data.get()))    return replicateConst(replicate_offsets);
-    if (typeid_cast<const ColumnNullable *>(data.get())) return replicateNullable(replicate_offsets);
-    if (typeid_cast<const ColumnTuple *>(data.get()))    return replicateTuple(replicate_offsets);
+    if (data->as<ColumnUInt8>())
+        return replicateNumber<UInt8>(replicate_offsets);
+    if (data->as<ColumnUInt16>())
+        return replicateNumber<UInt16>(replicate_offsets);
+    if (data->as<ColumnUInt32>())
+        return replicateNumber<UInt32>(replicate_offsets);
+    if (data->as<ColumnUInt64>())
+        return replicateNumber<UInt64>(replicate_offsets);
+    if (data->as<ColumnInt8>())
+        return replicateNumber<Int8>(replicate_offsets);
+    if (data->as<ColumnInt16>())
+        return replicateNumber<Int16>(replicate_offsets);
+    if (data->as<ColumnInt32>())
+        return replicateNumber<Int32>(replicate_offsets);
+    if (data->as<ColumnInt64>())
+        return replicateNumber<Int64>(replicate_offsets);
+    if (data->as<ColumnFloat32>())
+        return replicateNumber<Float32>(replicate_offsets);
+    if (data->as<ColumnFloat64>())
+        return replicateNumber<Float64>(replicate_offsets);
+    if (data->as<ColumnString>())
+        return replicateString(replicate_offsets);
+    if (data->as<ColumnConst>())
+        return replicateConst(replicate_offsets);
+    if (data->as<ColumnNullable>())
+        return replicateNullable(replicate_offsets);
+    if (data->as<ColumnTuple>())
+        return replicateTuple(replicate_offsets);
     return replicateGeneric(replicate_offsets);
 }
 
@@ -733,12 +758,12 @@ ColumnPtr ColumnArray::replicateNumber(const Offsets & replicate_offsets) const
     if (0 == col_size)
         return res;
 
-    ColumnArray & res_ = typeid_cast<ColumnArray &>(*res);
+    auto & res_ = res->as<ColumnArray &>();
 
-    const typename ColumnVector<T>::Container & src_data = typeid_cast<const ColumnVector<T> &>(*data).getData();
+    const typename ColumnVector<T>::Container & src_data = data->as<ColumnVector<T> &>().getData();
     const Offsets & src_offsets = getOffsets();
 
-    typename ColumnVector<T>::Container & res_data = typeid_cast<ColumnVector<T> &>(res_.getData()).getData();
+    typename ColumnVector<T>::Container & res_data = res_.getData().as<ColumnVector<T> &>().getData();
     Offsets & res_offsets = res_.getOffsets();
 
     res_data.reserve(data->size() / col_size * replicate_offsets.back());
@@ -786,13 +811,13 @@ ColumnPtr ColumnArray::replicateString(const Offsets & replicate_offsets) const
 
     ColumnArray & res_ = static_cast<ColumnArray &>(*res);
 
-    const ColumnString & src_string = typeid_cast<const ColumnString &>(*data);
+    const auto & src_string = data->as<ColumnString &>();
     const ColumnString::Chars & src_chars = src_string.getChars();
     const Offsets & src_string_offsets = src_string.getOffsets();
     const Offsets & src_offsets = getOffsets();
 
-    ColumnString::Chars & res_chars = typeid_cast<ColumnString &>(res_.getData()).getChars();
-    Offsets & res_string_offsets = typeid_cast<ColumnString &>(res_.getData()).getOffsets();
+    ColumnString::Chars & res_chars = res_.getData().as<ColumnString &>().getChars();
+    Offsets & res_string_offsets = res_.getData().as<ColumnString &>().getOffsets();
     Offsets & res_offsets = res_.getOffsets();
 
     res_chars.reserve(src_chars.size() / col_size * replicate_offsets.back());

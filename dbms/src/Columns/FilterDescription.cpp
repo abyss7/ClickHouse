@@ -1,4 +1,3 @@
-#include <Common/typeid_cast.h>
 #include <Columns/FilterDescription.h>
 #include <Columns/ColumnsNumber.h>
 #include <Columns/ColumnNullable.h>
@@ -28,10 +27,10 @@ ConstantFilterDescription::ConstantFilterDescription(const IColumn & column)
         const ColumnConst & column_const = static_cast<const ColumnConst &>(column);
         ColumnPtr column_nested = column_const.getDataColumnPtr()->convertToFullColumnIfLowCardinality();
 
-        if (!typeid_cast<const ColumnUInt8 *>(column_nested.get()))
+        if (!column_nested->as<ColumnUInt8>())
         {
-            const ColumnNullable * column_nested_nullable = typeid_cast<const ColumnNullable *>(column_nested.get());
-            if (!column_nested_nullable || !typeid_cast<const ColumnUInt8 *>(&column_nested_nullable->getNestedColumn()))
+            const auto * column_nested_nullable = column_nested->as<ColumnNullable>();
+            if (!column_nested_nullable || !column_nested_nullable->getNestedColumn().as<ColumnUInt8>())
             {
                 throw Exception("Illegal type " + column_nested->getName() + " of column for constant filter. Must be UInt8 or Nullable(UInt8).",
                                 ErrorCodes::ILLEGAL_TYPE_OF_COLUMN_FOR_FILTER);
@@ -54,18 +53,18 @@ FilterDescription::FilterDescription(const IColumn & column_)
 
     const auto & column = data_holder ? *data_holder : column_;
 
-    if (const ColumnUInt8 * concrete_column = typeid_cast<const ColumnUInt8 *>(&column))
+    if (const auto * concrete_column = column.as<ColumnUInt8>())
     {
         data = &concrete_column->getData();
         return;
     }
 
-    if (const ColumnNullable * nullable_column = typeid_cast<const ColumnNullable *>(&column))
+    if (const auto * nullable_column = column.as<ColumnNullable>())
     {
         ColumnPtr nested_column = nullable_column->getNestedColumnPtr();
         MutableColumnPtr mutable_holder = (*std::move(nested_column)).mutate();
 
-        ColumnUInt8 * concrete_column = typeid_cast<ColumnUInt8 *>(mutable_holder.get());
+        auto * concrete_column = mutable_holder->as<ColumnUInt8>();
         if (!concrete_column)
             throw Exception("Illegal type " + column.getName() + " of column for filter. Must be UInt8 or Nullable(UInt8).",
                 ErrorCodes::ILLEGAL_TYPE_OF_COLUMN_FOR_FILTER);

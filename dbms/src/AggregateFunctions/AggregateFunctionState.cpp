@@ -42,12 +42,12 @@ DataTypePtr AggregateFunctionState::getReturnType() const
 
     /// Special case: it is -MergeState combinator.
     /// We must return AggregateFunction(agg, ...) instead of AggregateFunction(aggMerge, ...)
-    if (typeid_cast<const AggregateFunctionMerge *>(ptr->getFunction().get()))
+    if (ptr->getFunction()->as<AggregateFunctionMerge>())
     {
         if (arguments.size() != 1)
             throw Exception("Combinator -MergeState expects only one argument", ErrorCodes::BAD_ARGUMENTS);
 
-        if (!typeid_cast<const DataTypeAggregateFunction *>(arguments[0].get()))
+        if (!arguments[0]->as<DataTypeAggregateFunction>())
             throw Exception("Combinator -MergeState expects argument with AggregateFunction type", ErrorCodes::BAD_ARGUMENTS);
 
         return arguments[0];

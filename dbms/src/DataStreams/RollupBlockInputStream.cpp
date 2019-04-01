@@ -3,7 +3,6 @@
 #include <DataTypes/DataTypeAggregateFunction.h>
 #include <Columns/ColumnAggregateFunction.h>
 #include <Columns/FilterDescription.h>
-#include <Common/typeid_cast.h>
 
 namespace DB
 {

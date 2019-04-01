@@ -24,7 +24,7 @@ public:
 
         const DataTypePtr & argument = arguments[0];
 
-        const DataTypeAggregateFunction * function = typeid_cast<const DataTypeAggregateFunction *>(argument.get());
+        const auto * function = argument->as<DataTypeAggregateFunction>();
         if (!function)
             throw Exception("Illegal type " + argument->getName() + " of argument for aggregate function with " + getName() + " suffix"
                 + " must be AggregateFunction(...)", ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT);
@@ -37,7 +37,7 @@ public:
     {
         const DataTypePtr & argument = arguments[0];
 
-        const DataTypeAggregateFunction * function = typeid_cast<const DataTypeAggregateFunction *>(argument.get());
+        const auto * function = argument->as<DataTypeAggregateFunction>();
         if (!function)
             throw Exception("Illegal type " + argument->getName() + " of argument for aggregate function with " + getName() + " suffix"
                 + " must be AggregateFunction(...)", ErrorCodes::ILLEGAL_TYPE_OF_ARGUMENT);

@@ -15,7 +15,6 @@
 #include <TableFunctions/TableFunctionFactory.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Common/Exception.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB

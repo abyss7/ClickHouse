@@ -4,7 +4,6 @@
 #include <Parsers/ASTFunction.h>
 #include <Parsers/ASTIdentifier.h>
 #include <Parsers/ASTLiteral.h>
-#include <Common/typeid_cast.h>
 #include <Poco/String.h>
 #include <IO/ReadBuffer.h>
 #include <Parsers/queryToString.h>

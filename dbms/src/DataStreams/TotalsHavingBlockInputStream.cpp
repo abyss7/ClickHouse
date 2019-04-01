@@ -4,7 +4,6 @@
 #include <DataTypes/DataTypeAggregateFunction.h>
 #include <Columns/ColumnAggregateFunction.h>
 #include <Columns/FilterDescription.h>
-#include <Common/typeid_cast.h>
 #include <Common/Arena.h>
 
 
@@ -30,7 +29,7 @@ TotalsHavingBlockInputStream::TotalsHavingBlockInputStream(
     current_totals.reserve(source_header.columns());
     for (const auto & elem : source_header)
     {
-        if (const ColumnAggregateFunction * column = typeid_cast<const ColumnAggregateFunction *>(elem.column.get()))
+        if (const auto * column = elem.column->as<ColumnAggregateFunction>())
         {
             /// Create ColumnAggregateFunction with initial aggregate function state.
 
@@ -167,9 +166,9 @@ void TotalsHavingBlockInputStream::addToTotals(const Block & block, const IColum
     {
         const ColumnWithTypeAndName & current = block.getByPosition(i);
 
-        if (const ColumnAggregateFunction * column = typeid_cast<const ColumnAggregateFunction *>(current.column.get()))
+        if (const auto * column = current.column->as<ColumnAggregateFunction>())
         {
-            auto & target = typeid_cast<ColumnAggregateFunction &>(*current_totals[i]);
+            auto & target = current_totals[i]->as<ColumnAggregateFunction &>();
             IAggregateFunction * function = target.getAggregateFunction().get();
             AggregateDataPtr data = target.getData()[0];
 

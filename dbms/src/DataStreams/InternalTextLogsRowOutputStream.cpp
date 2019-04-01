@@ -1,7 +1,6 @@
 #include "InternalTextLogsRowOutputStream.h"
 #include <Core/Block.h>
 #include <Interpreters/InternalTextLogsQueue.h>
-#include <Common/typeid_cast.h>
 #include <DataTypes/IDataType.h>
 #include <Columns/ColumnsNumber.h>
 #include <Columns/ColumnString.h>
@@ -18,16 +17,16 @@ Block InternalTextLogsRowOutputStream::getHeader() const
 
 void InternalTextLogsRowOutputStream::write(const Block & block)
 {
-    auto & array_event_time = typeid_cast<const ColumnUInt32 &>(*block.getByName("event_time").column).getData();
-    auto & array_microseconds = typeid_cast<const ColumnUInt32 &>(*block.getByName("event_time_microseconds").column).getData();
+    const auto & array_event_time = block.getByName("event_time").column->as<ColumnUInt32>()->getData();
+    const auto & array_microseconds = block.getByName("event_time_microseconds").column->as<ColumnUInt32>()->getData();
 
-    auto & column_host_name = typeid_cast<const ColumnString &>(*block.getByName("host_name").column);
-    auto & column_query_id = typeid_cast<const ColumnString &>(*block.getByName("query_id").column);
+    const auto & column_host_name = block.getByName("host_name").column->as<ColumnString &>();
+    const auto & column_query_id = block.getByName("query_id").column->as<ColumnString>();
 
-    auto & array_thread_number = typeid_cast<const ColumnUInt32 &>(*block.getByName("thread_number").column).getData();
-    auto & array_priority = typeid_cast<const ColumnInt8 &>(*block.getByName("priority").column).getData();
-    auto & column_source = typeid_cast<const ColumnString &>(*block.getByName("source").column);
-    auto & column_text = typeid_cast<const ColumnString &>(*block.getByName("text").column);
+    const auto & array_thread_number = block.getByName("thread_number").column->as<ColumnUInt32 &>().getData();
+    const auto & array_priority = block.getByName("priority").column->as<ColumnInt8 &>().getData();
+    const auto & column_source = block.getByName("source").column->as<ColumnString &>();
+    const auto & column_text = block.getByName("text").column->as<ColumnString &>();
 
     for (size_t row_num = 0; row_num < block.rows(); ++row_num)
     {

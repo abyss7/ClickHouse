@@ -4,7 +4,6 @@
 #include <IO/Operators.h>
 #include <ext/map.h>
 #include <ext/range.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -354,7 +353,7 @@ void ColumnTuple::forEachSubcolumn(ColumnCallback callback)
 
 bool ColumnTuple::structureEquals(const IColumn & rhs) const
 {
-    if (auto rhs_tuple = typeid_cast<const ColumnTuple *>(&rhs))
+    if (const auto * rhs_tuple = rhs.as<ColumnTuple>())
     {
         const size_t tuple_size = columns.size();
         if (tuple_size != rhs_tuple->columns.size())

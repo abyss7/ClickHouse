@@ -1,14 +1,14 @@
 #include <Columns/ColumnAggregateFunction.h>
-#include <Columns/ColumnsCommon.h>
+
 #include <AggregateFunctions/AggregateFunctionState.h>
+#include <Columns/ColumnsCommon.h>
 #include <DataStreams/ColumnGathererStream.h>
+#include <IO/Operators.h>
 #include <IO/WriteBufferFromArena.h>
 #include <IO/WriteBufferFromString.h>
-#include <IO/Operators.h>
-#include <Common/SipHash.h>
 #include <Common/AlignedBuffer.h>
-#include <Common/typeid_cast.h>
 #include <Common/Arena.h>
+#include <Common/SipHash.h>
 
 
 namespace DB
@@ -65,7 +65,7 @@ MutableColumnPtr ColumnAggregateFunction::convertToValues() const
         *   AggregateFunction(quantileTiming(0.5), UInt64)
         * into UInt16 - already finished result of `quantileTiming`.
         */
-    if (const AggregateFunctionState * function_state = typeid_cast<const AggregateFunctionState *>(func.get()))
+    if (const auto * function_state = func->as<AggregateFunctionState>())
     {
         auto res = createView();
         res->set(function_state->getNestedFunction());

@@ -26,7 +26,6 @@
 #include <Common/ZooKeeper/KeeperException.h>
 #include <Common/getFQDNOrHostName.h>
 #include <Common/isLocalAddress.h>
-#include <Common/typeid_cast.h>
 #include <Common/ClickHouseRevision.h>
 #include <Common/formatReadable.h>
 #include <Common/DNSResolver.h>
@@ -1802,7 +1801,7 @@ protected:
         Block block = getBlockWithAllStreamData(std::make_shared<RemoteBlockInputStream>(
             connection, query, InterpreterShowCreateQuery::getSampleBlock(), context, settings));
 
-        return typeid_cast<const ColumnString &>(*block.safeGetByPosition(0).column).getDataAt(0).toString();
+        return block.safeGetByPosition(0).column->as<ColumnString &>().getDataAt(0).toString();
     }
 
     ASTPtr getCreateTableForPullShard(TaskShard & task_shard)

@@ -3,7 +3,6 @@
 #include <DataTypes/DataTypeAggregateFunction.h>
 #include <AggregateFunctions/IAggregateFunction.h>
 #include <Columns/ColumnAggregateFunction.h>
-#include <Common/typeid_cast.h>
 
 
 namespace DB
@@ -26,7 +25,7 @@ public:
         : IAggregateFunctionHelper<AggregateFunctionMerge>({argument}, nested_->getParameters())
         , nested_func(nested_)
     {
-        const DataTypeAggregateFunction * data_type = typeid_cast<const DataTypeAggregateFunction *>(argument.get());
+        const auto * data_type = argument->as<DataTypeAggregateFunction>();
 
         if (!data_type || data_type->getFunctionName() != nested_func->getName())
             throw Exception("Illegal type " + argument->getName() + " of argument for aggregate function " + getName(),

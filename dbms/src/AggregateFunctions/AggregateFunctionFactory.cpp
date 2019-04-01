@@ -13,7 +13,6 @@
 #include <Interpreters/Context.h>
 
 #include <Common/StringUtils/StringUtils.h>
-#include <Common/typeid_cast.h>
 
 #include <Poco/String.h>
 
@@ -50,7 +49,7 @@ static DataTypes convertLowCardinalityTypesToNested(const DataTypes & types)
     res_types.reserve(types.size());
     for (const auto & type : types)
     {
-        if (auto * low_cardinality_type = typeid_cast<const DataTypeLowCardinality *>(type.get()))
+        if (const auto * low_cardinality_type = type->as<DataTypeLowCardinality>())
             res_types.push_back(low_cardinality_type->getDictionaryType());
         else
             res_types.push_back(type);
