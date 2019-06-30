@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Core/Types.h>
 #include <Parsers/New/Token.h>
 
 namespace DB
@@ -16,13 +15,33 @@ public:
 private:
     Token next(bool & done);
 
-    Location currentLocation() const;
+    inline Location currentLocation() const { return Location(line, column, pos + 1); }
 
-    char current() const;
+    inline char current() const { return input[pos]; }
     char lookAhead() const; // returns '\0' if there is nothing ahead
 
+    void advance(UInt64 step = 1);
+    void newLine();
+
+    bool isOneSymbolToken(Token::Type & type) const;
+    bool isOneOrTwoSymbolsToken(Token::Type & type) const;
+    bool isTwoSymbolsToken(Token::Type & type) const;
+    bool isComment() const;
+    bool isNumber() const;
+    bool isString() const;
+    bool isIdentifierOrKeyword() const;
+
+    Token consumeComment();
+    Token consumeNumber();
+    Token consumeString();
+    Token consumeIdentifierOrKeyword();
+
     const String & input;
-    size_t pos = 0;
+
+    // Current location
+    UInt64 pos = 0;
+    UInt64 line = 1;
+    UInt64 column = 1;
 };
 
 }
