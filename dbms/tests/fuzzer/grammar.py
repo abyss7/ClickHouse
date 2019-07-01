@@ -37,8 +37,8 @@ COLUMN_GRAMMAR = {
     "<ColumnExprList>"      : ["<ColumnExpr>(, <ColumnExpr>)*"],
     "<ColumnExpr>"          : ["<ColumnUnaryExpr>", "<ColumnExpr> <BinaryOp> <ColumnExpr>"],
     "<ColumnUnaryExpr>"     : ["<ColumnPrimaryExpr>", "<UnaryOp> <ColumnUnaryExpr>"],
-    "<ColumnPrimaryExpr>"   : ["<literal>", "<ColumnId>", "<ColumnFuncExpr>", "( <ColumnExpr> )"],
-    "<ColumnFuncExpr>"      : ["<identifier>(<ColumnExprList>)"],
+    "<ColumnPrimaryExpr>"   : ["<literal>", "<ColumnId>", "<ColumnFuncCall>", "( <ColumnExpr> )"],
+    "<ColumnFuncCall>"      : ["<identifier>(<ColumnExprList>)"],
 }
 
 TABLE_GRAMMAR = {

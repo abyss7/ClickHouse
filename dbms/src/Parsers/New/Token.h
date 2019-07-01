@@ -66,6 +66,9 @@ public:
     Token(const Token &) = delete;
     Token & operator=(const Token &) = delete;
 
+    Type getType() const { return type; }
+    const std::string & getValue() const { return value; }
+
 private:
     const Location location = {};
     const Type type = INVALID;
