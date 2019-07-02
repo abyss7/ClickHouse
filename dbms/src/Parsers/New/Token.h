@@ -54,6 +54,12 @@ public:
         STRING,             // 'abc'
         COMMENT,            // -- … \n
 
+        // We need a separate section for keyword-ops to help with precedence
+
+        // keywords
+        NEGATIVE,           // unary -
+        NOT,                // unary NOT
+
         TYPE_SIZE
     };
 
@@ -66,8 +72,14 @@ public:
     Token(const Token &) = delete;
     Token & operator=(const Token &) = delete;
 
+    const Location & getLocation() const { return location; }
     Type getType() const { return type; }
     const std::string & getValue() const { return value; }
+
+    auto getPrecedence() const { return precedence.at(type); }
+
+    static TypeList literals();
+    static TypeList binaryOps();
 
 private:
     const Location location = {};

@@ -1,8 +1,11 @@
 #include <Parsers/New/Parser.h>
 
+#include <Parsers/New/AST/BinaryOp.h>
 #include <Parsers/New/AST/ColumnExprList.h>
 #include <Parsers/New/AST/QueryList.h>
 #include <Parsers/New/AST/SelectQuery.h>
+#include <Parsers/New/AST/TableExprList.h>
+#include <Parsers/New/AST/UnaryOp.h>
 
 namespace DB {
 
@@ -21,7 +24,7 @@ AST::Ptr Parser::parseQueryList()
     while (current != end)
     {
         if (!first)
-            consume({Token::SEMICOLON});
+            consume(Token::SEMICOLON);
 
         AST::Ptr query = parseQuery();
         if (!query)
@@ -79,7 +82,7 @@ AST::Ptr Parser::parseColumnExprList()
     while (next(Token::COMMA))
     {
         list->append(expr);
-        consume({Token::COMMA});
+        consume(Token::COMMA);
         expr = parseColumnExpr();
     }
 
@@ -97,9 +100,9 @@ AST::Ptr Parser::parseColumnExpr(UInt8 precedence)
     {
         if (next("not"))
         {
-            auto not_precedence = consume("not").precedence();
-            DCHECK(precedence <= not_precedence);
-            return std::make_shared<AST::Not>(parseColumnExpr(not_precedence));
+            Token not_token(consume("not").getLocation(), Token::NOT);
+            // FIXME: DCHECK(precedence <= not_precedence);
+            return std::make_shared<AST::UnaryOp>(not_token, parseColumnExpr(not_token.getPrecedence()));
         }
         else if (next(Token::LEFT_PAREN, 1))
         {
@@ -112,9 +115,9 @@ AST::Ptr Parser::parseColumnExpr(UInt8 precedence)
     }
     else if (next(Token::MINUS))
     {
-        auto minus_precedence = consume(Token::MINUS).precedence();
-        DCHECK(precedence <= minus_precedence);
-        return std::make_shared<AST::Negative>(parseColumnExpr(minus_precedence));
+        Token minus_token(consume(Token::MINUS).getLocation(), Token::NEGATIVE);
+        // FIXME: DCHECK(precedence <= minus_precedence);
+        return std::make_shared<AST::UnaryOp>(minus_token, parseColumnExpr(minus_token.getPrecedence()));
     }
     else if (next(Token::LEFT_PAREN))
     {
@@ -133,14 +136,57 @@ AST::Ptr Parser::parseColumnExpr(UInt8 precedence)
 
     while (next(Token::binaryOps()))
     {
-        if (expect(Token::binaryOps()).precedence() <= precedence)
+        if (expect(Token::binaryOps()).getPrecedence() <= precedence)
         {
             return left;
         }
 
         const auto & op = consume(Token::binaryOps());
-        auto right = parseColumnExpr(op.precedence());
+        auto right = parseColumnExpr(op.getPrecedence());
         left = std::make_shared<AST::BinaryOp>(op, left, right);
+    }
+
+    return left;
+}
+
+AST::Ptr Parser::parseTableExprList()
+{
+    auto list = std::make_shared<AST::TableExprList>();
+    auto expr = parseTableExpr();
+
+    while (next(Token::COMMA))
+    {
+        list->append(expr);
+        consume(Token::COMMA);
+        expr = parseTableExpr();
+    }
+
+    if (expr)
+        list->append(expr);
+
+    return list;
+}
+
+AST::Ptr Parser::parseTableExpr()
+{
+    AST::Ptr left;
+
+    if (next(Token::IDENTIFIER))
+    {
+        if (next(Token::LEFT_PAREN, 1))
+        {
+            left = parseTableFuncCall();
+        }
+        else
+        {
+            left = parseTableIdentifier();
+        }
+    }
+    else if (next(Token::LEFT_PAREN))
+    {
+        consume(Token::LEFT_PAREN);
+        left = parseTableExpr();
+        consume(Token::RIGHT_PAREN);
     }
 
     return left;
