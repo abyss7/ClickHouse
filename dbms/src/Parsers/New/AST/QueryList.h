@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Parsers/New/AST/Query.h>
+#include "Query.h"
 
 namespace DB
 {

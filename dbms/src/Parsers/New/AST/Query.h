@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Parsers/New/AST/Base.h>
+#include "Base.h"
 
 namespace DB
 {

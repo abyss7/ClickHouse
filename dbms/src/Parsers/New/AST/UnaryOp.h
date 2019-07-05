@@ -1,14 +1,16 @@
 #pragma once
 
-#include <Parsers/New/AST/Base.h>
+#include "ColumnExpr.h"
 
-namespace DB {
-namespace AST {
+namespace DB
+{
+namespace AST
+{
 
-class UnaryOp : public Base
+class UnaryOp : public ColumnExpr
 {
 public:
-    UnaryOp(const Token & op, AST::Ptr arg);
+    UnaryOp(const Token & op, AST::ColumnExprPtr arg);
 };
 
 } // namespace AST

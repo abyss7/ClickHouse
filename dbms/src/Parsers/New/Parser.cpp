@@ -1,13 +1,7 @@
 #include <Parsers/New/Parser.h>
 
-#include <Parsers/New/AST/BinaryOp.h>
-#include <Parsers/New/AST/ColumnExprList.h>
-#include <Parsers/New/AST/QueryList.h>
-#include <Parsers/New/AST/SelectQuery.h>
-#include <Parsers/New/AST/TableExprList.h>
-#include <Parsers/New/AST/UnaryOp.h>
-
-namespace DB {
+namespace DB
+{
 
 AST::Ptr Parser::parse()
 {
@@ -16,7 +10,7 @@ AST::Ptr Parser::parse()
     return result;
 }
 
-AST::Ptr Parser::parseQueryList()
+AST::QueryListPtr Parser::parseQueryList()
 {
     auto list = std::make_shared<AST::QueryList>();
     bool first = true;
@@ -26,7 +20,7 @@ AST::Ptr Parser::parseQueryList()
         if (!first)
             consume(Token::SEMICOLON);
 
-        AST::Ptr query = parseQuery();
+        auto query = parseQuery();
         if (!query)
         {
             // Query list is over
@@ -39,7 +33,7 @@ AST::Ptr Parser::parseQueryList()
     return list;
 }
 
-AST::Ptr Parser::parseQuery()
+AST::QueryPtr Parser::parseQuery()
 {
     if (next("select"))
     {
@@ -52,7 +46,7 @@ AST::Ptr Parser::parseQuery()
     return {};
 }
 
-AST::Ptr Parser::parseSelectQuery()
+AST::SelectQueryPtr Parser::parseSelectQuery()
 {
     auto select = std::make_shared<AST::SelectQuery>();
 
@@ -74,7 +68,7 @@ AST::Ptr Parser::parseSelectQuery()
     return select;
 }
 
-AST::Ptr Parser::parseColumnExprList()
+AST::ColumnExprListPtr Parser::parseColumnExprList()
 {
     auto list = std::make_shared<AST::ColumnExprList>();
     auto expr = parseColumnExpr();
@@ -92,9 +86,9 @@ AST::Ptr Parser::parseColumnExprList()
     return list;
 }
 
-AST::Ptr Parser::parseColumnExpr(UInt8 precedence)
+AST::ColumnExprPtr Parser::parseColumnExpr(UInt8 precedence)
 {
-    AST::Ptr left;
+    AST::ColumnExprPtr left;
 
     if (next(Token::IDENTIFIER))
     {
@@ -106,7 +100,7 @@ AST::Ptr Parser::parseColumnExpr(UInt8 precedence)
         }
         else if (next(Token::LEFT_PAREN, 1))
         {
-            left = parseColumnFuncCall();
+            left = parseColumnFunc();
         }
         else
         {
@@ -149,7 +143,37 @@ AST::Ptr Parser::parseColumnExpr(UInt8 precedence)
     return left;
 }
 
-AST::Ptr Parser::parseTableExprList()
+AST::ColumnFuncPtr Parser::parseColumnFunc()
+{
+    const auto & name = consume(Token::IDENTIFIER);
+
+    consume(Token::LEFT_PAREN);
+    auto args = parseColumnExprList();
+    consume(Token::RIGHT_PAREN);
+
+    return std::make_shared<AST::ColumnFunc>(name, args);
+}
+
+AST::ColumnIdentifierPtr Parser::parseColumnIdentifier()
+{
+    const auto & part1 = consume(Token::IDENTIFIER);
+
+    if (!next(Token::DOT))
+        return std::make_shared<AST::ColumnIdentifier>(part1);
+    consume(Token::DOT);
+
+    const auto & part2 = consume(Token::IDENTIFIER);
+
+    if (!next(Token::DOT))
+        return std::make_shared<AST::ColumnIdentifier>(part1, part2);
+    consume(Token::DOT);
+
+    const auto & part3 = consume(Token::IDENTIFIER);
+
+    return std::make_shared<AST::ColumnIdentifier>(part1, part2, part3);
+}
+
+AST::TableExprListPtr Parser::parseTableExprList()
 {
     auto list = std::make_shared<AST::TableExprList>();
     auto expr = parseTableExpr();
@@ -167,15 +191,15 @@ AST::Ptr Parser::parseTableExprList()
     return list;
 }
 
-AST::Ptr Parser::parseTableExpr()
+AST::TableExprPtr Parser::parseTableExpr()
 {
-    AST::Ptr left;
+    AST::TableExprPtr left;
 
     if (next(Token::IDENTIFIER))
     {
         if (next(Token::LEFT_PAREN, 1))
         {
-            left = parseTableFuncCall();
+            left = parseTableFunc();
         }
         else
         {
@@ -190,6 +214,47 @@ AST::Ptr Parser::parseTableExpr()
     }
 
     return left;
+}
+
+AST::TableFuncPtr Parser::parseTableFunc()
+{
+    const auto & name = consume(Token::IDENTIFIER);
+
+    consume(Token::LEFT_PAREN);
+    auto args = parseColumnExprList();
+    consume(Token::RIGHT_PAREN);
+
+    return std::make_shared<AST::TableFunc>(name, args);
+}
+
+AST::TableIdentifierPtr Parser::parseTableIdentifier()
+{
+    const auto & part1 = consume(Token::IDENTIFIER);
+
+    if (!next(Token::DOT))
+        return std::make_shared<AST::TableIdentifier>(part1);
+    consume(Token::DOT);
+
+    const auto & part2 = consume(Token::IDENTIFIER);
+
+    return std::make_shared<AST::TableIdentifier>(part1, part2);
+}
+
+AST::LiteralPtr Parser::parseLiteral()
+{
+    const auto & value = consume(Token::literals());
+    return std::make_shared<AST::Literal>(value);
+}
+
+const Token & Parser::expect(Token::Type expected_type) const
+{
+    if (current == end)
+        throw std::logic_error("Unexpected end-of-tokens!");
+
+    if (current->getType() == expected_type)
+        return *current;
+
+    throw std::logic_error("Unexpected token!");
 }
 
 bool Parser::next(Token::Type type, UInt32 advance) const
@@ -210,7 +275,7 @@ bool Parser::next(const Token::TypeList & types) const
 bool Parser::next(const std::string & keyword) const
 {
     // FIXME: compare to_lower() token value.
-    return next(Token::IDENTIFIER) && (current + 1)->getValue() == keyword;
+    return next(Token::IDENTIFIER) && current->getValue() == keyword;
 }
 
 const Token & Parser::consume(const Token::TypeList & types)

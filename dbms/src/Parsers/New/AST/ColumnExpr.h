@@ -1,14 +1,18 @@
 #pragma once
 
-#include <Parsers/New/AST/Base.h>
+#include "Base.h"
 
-namespace DB {
-namespace AST {
+namespace DB
+{
+namespace AST
+{
 
 class ColumnExpr : public Base
 {
 
 };
+
+using ColumnExprPtr = std::shared_ptr<ColumnExpr>;
 
 } // namespace AS
 } // namespace DB

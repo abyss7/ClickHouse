@@ -238,10 +238,9 @@ website/package-lock.json
 # Ignore files for locally disabled tests
 /dbms/tests/queries/**/*.disabled
 
-# cquery cache
+# Caches
 /.cquery-cache
-
-# ccls cache
 /.ccls-cache
+/.clangd
 
 /compile_commands.json

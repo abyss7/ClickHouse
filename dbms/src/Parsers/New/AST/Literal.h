@@ -7,10 +7,10 @@ namespace DB
 namespace AST
 {
 
-class BinaryOp : public ColumnExpr
+class Literal : public ColumnExpr
 {
 public:
-    BinaryOp(const Token & op, AST::ColumnExprPtr arg1, AST::ColumnExprPtr arg2);
+    explicit Literal(const Token & value);
 };
 
 } // namespace AST

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Parsers/New/AST/Base.h>
-#include <Parsers/New/Token.h>
+#include <Parsers/New/AST/All.h>
 
 namespace DB
 {
@@ -15,21 +14,21 @@ public:
 
     AST::Ptr parse();
 
-    AST::Ptr parseQueryList();
-    AST::Ptr parseQuery();
-    AST::Ptr parseSelectQuery();
+    AST::QueryListPtr parseQueryList();
+    AST::QueryPtr parseQuery();
+    AST::SelectQueryPtr parseSelectQuery();
 
-    AST::Ptr parseColumnExprList();
-    AST::Ptr parseColumnExpr(UInt8 precedence = 0u);
-    AST::Ptr parseColumnFuncCall();
-    AST::Ptr parseColumnIdentifier();
+    AST::ColumnExprListPtr parseColumnExprList();
+    AST::ColumnExprPtr parseColumnExpr(UInt8 precedence = 0u);
+    AST::ColumnFuncPtr parseColumnFunc();
+    AST::ColumnIdentifierPtr parseColumnIdentifier();
 
-    AST::Ptr parseTableExprList();
-    AST::Ptr parseTableExpr();
-    AST::Ptr parseTableFuncCall();
-    AST::Ptr parseTableIdentifier();
+    AST::TableExprListPtr parseTableExprList();
+    AST::TableExprPtr parseTableExpr();
+    AST::TableFuncPtr parseTableFunc();
+    AST::TableIdentifierPtr parseTableIdentifier();
 
-    AST::Ptr parseLiteral();
+    AST::LiteralPtr parseLiteral();
 
 private:
     const Token & expect(Token::Type expected_type) const;
