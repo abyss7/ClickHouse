@@ -50,7 +50,24 @@ std::string determineDefaultTimeZone()
     else
     {
         error_prefix = "Could not determine local time zone: ";
-        tz_file_path = "/etc/localtime"; /// FIXME: in case of no TZ use the immediate linked file as tz name.
+        tz_file_path = "/etc/localtime";
+
+        /// No TZ variable and no tzdata installed (e.g. Docker)
+        if (!fs::exists(tz_file_path))
+            return "UTC";
+
+        /// Read symlink but not transitive.
+        /// Example:
+        ///  /etc/localtime -> /usr/share/zoneinfo//UTC
+        ///  /usr/share/zoneinfo//UTC -> UCT
+        /// But the preferred time zone name is pointed by the first link (UTC), and the second link is just an internal detail.
+        if (fs::is_symlink(tz_file_path))
+        {
+            tz_file_path = fs::read_symlink(tz_file_path);
+            /// If it's relative - make it absolute.
+            if (tz_file_path.is_relative())
+                tz_file_path = (fs::path("/etc/") / tz_file_path).lexically_normal();
+        }
     }
 
     try
