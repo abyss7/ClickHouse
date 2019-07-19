@@ -16,7 +16,7 @@ namespace DB
   * If final == false, aggregate functions are not finalized, that is, they are not replaced by their value, but contain an intermediate state of calculations.
   * This is necessary so that aggregation can continue (for example, by combining streams of partially aggregated data).
   */
-class ParallelAggregatingBlockInputStream : public IBlockInputStream
+class ParallelAggregatingBlockInputStream : public IBlockInputStream, public WithLogger
 {
 public:
     /** Columns from key_names and arguments of aggregate functions must already be computed.
@@ -69,7 +69,7 @@ private:
     };
     std::vector<std::unique_ptr<TemporaryFileStream>> temporary_inputs;
 
-    Logger * log = &Logger::get("ParallelAggregatingBlockInputStream");
+    Poco::Logger * log = &Poco::Logger::get("ParallelAggregatingBlockInputStream");
 
 
     ManyAggregatedDataVariants many_data;

@@ -6,7 +6,6 @@
 #include <mutex>
 #include <Common/ThreadPool.h>
 #include <Common/EventCounter.h>
-#include <common/logger_useful.h>
 
 #include <boost/lockfree/stack.hpp>
 
@@ -15,7 +14,7 @@ namespace DB
 
 
 /// Executes query pipeline.
-class PipelineExecutor
+class PipelineExecutor : public WithLogger
 {
 public:
     /// Get pipeline as a set of processors.
@@ -130,8 +129,6 @@ private:
 
     std::atomic_bool cancelled;
     std::atomic_bool finished;
-
-    Poco::Logger * log = &Poco::Logger::get("PipelineExecutor");
 
     /// Num threads waiting condvar. Last thread finish execution if task_queue is empty.
     size_t num_waiting_threads = 0;

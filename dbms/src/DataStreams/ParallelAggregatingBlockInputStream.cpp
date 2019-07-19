@@ -18,7 +18,7 @@ namespace DB
 ParallelAggregatingBlockInputStream::ParallelAggregatingBlockInputStream(
     const BlockInputStreams & inputs, const BlockInputStreamPtr & additional_input_at_end,
     const Aggregator::Params & params_, bool final_, size_t max_threads_, size_t temporary_data_merge_threads_)
-    : params(params_), aggregator(params),
+    : WithLogger("ParallelAggregatingBlockInputStream"), params(params_), aggregator(params),
     final(final_), max_threads(std::min(inputs.size(), max_threads_)), temporary_data_merge_threads(temporary_data_merge_threads_),
     keys_size(params.keys_size), aggregates_size(params.aggregates_size),
     handler(*this), processor(inputs, additional_input_at_end, max_threads, handler)
@@ -82,9 +82,8 @@ Block ParallelAggregatingBlockInputStream::readImpl()
                 input_streams.emplace_back(temporary_inputs.back()->block_in);
             }
 
-            LOG_TRACE(log, "Will merge " << files.files.size() << " temporary files of size "
-                << (files.sum_size_compressed / 1048576.0) << " MiB compressed, "
-                << (files.sum_size_uncompressed / 1048576.0) << " MiB uncompressed.");
+            LOG(trace) << "Will merge " << files.files.size() << " temporary files of size " << (files.sum_size_compressed / 1048576.0)
+                       << " MiB compressed, " << (files.sum_size_uncompressed / 1048576.0) << " MiB uncompressed.";
 
             impl = std::make_unique<MergingAggregatedMemoryEfficientBlockInputStream>(
                 input_streams, params, final, temporary_data_merge_threads, temporary_data_merge_threads);
@@ -164,7 +163,7 @@ void ParallelAggregatingBlockInputStream::execute()
     for (size_t i = 0; i < max_threads; ++i)
         threads_data.emplace_back(keys_size, aggregates_size);
 
-    LOG_TRACE(log, "Aggregating");
+    LOG(trace) << "Aggregating";
 
     Stopwatch watch;
 
@@ -186,20 +185,20 @@ void ParallelAggregatingBlockInputStream::execute()
     for (size_t i = 0; i < max_threads; ++i)
     {
         size_t rows = many_data[i]->size();
-        LOG_TRACE(log, std::fixed << std::setprecision(3)
-            << "Aggregated. " << threads_data[i].src_rows << " to " << rows << " rows"
-                << " (from " << threads_data[i].src_bytes / 1048576.0 << " MiB)"
-            << " in " << elapsed_seconds << " sec."
-            << " (" << threads_data[i].src_rows / elapsed_seconds << " rows/sec., "
-                << threads_data[i].src_bytes / elapsed_seconds / 1048576.0 << " MiB/sec.)");
+        LOG(trace) << std::fixed << std::setprecision(3) << "Aggregated. " << threads_data[i].src_rows << " to " << rows << " rows"
+                   << " (from " << threads_data[i].src_bytes / 1048576.0 << " MiB)"
+                   << " in " << elapsed_seconds << " sec."
+                   << " (" << threads_data[i].src_rows / elapsed_seconds << " rows/sec., "
+                   << threads_data[i].src_bytes / elapsed_seconds / 1048576.0 << " MiB/sec.)";
 
         total_src_rows += threads_data[i].src_rows;
         total_src_bytes += threads_data[i].src_bytes;
     }
-    LOG_TRACE(log, std::fixed << std::setprecision(3)
-        << "Total aggregated. " << total_src_rows << " rows (from " << total_src_bytes / 1048576.0 << " MiB)"
-        << " in " << elapsed_seconds << " sec."
-        << " (" << total_src_rows / elapsed_seconds << " rows/sec., " << total_src_bytes / elapsed_seconds / 1048576.0 << " MiB/sec.)");
+    LOG(trace) << std::fixed << std::setprecision(3) << "Total aggregated. " << total_src_rows << " rows (from "
+               << total_src_bytes / 1048576.0 << " MiB)"
+               << " in " << elapsed_seconds << " sec."
+               << " (" << total_src_rows / elapsed_seconds << " rows/sec., " << total_src_bytes / elapsed_seconds / 1048576.0
+               << " MiB/sec.)";
 
     /// If there was no data, and we aggregate without keys, we must return single row with the result of empty aggregation.
     /// To do this, we pass a block with zero rows to aggregate.

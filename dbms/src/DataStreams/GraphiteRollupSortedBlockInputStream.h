@@ -1,7 +1,5 @@
 #pragma once
 
-#include <common/logger_useful.h>
-
 #include <Core/Row.h>
 #include <Core/ColumnNumbers.h>
 #include <DataStreams/MergingSortedBlockInputStream.h>
@@ -147,7 +145,7 @@ namespace Graphite
   *  merge `value` values using the specified aggregate functions,
   *  as well as keeping the maximum value of the `version` column.
   */
-class GraphiteRollupSortedBlockInputStream : public MergingSortedBlockInputStream
+class GraphiteRollupSortedBlockInputStream : public MergingSortedBlockInputStream, private WithLogger
 {
 public:
     GraphiteRollupSortedBlockInputStream(
@@ -166,8 +164,6 @@ protected:
     Block readImpl() override;
 
 private:
-    Logger * log = &Logger::get("GraphiteRollupSortedBlockInputStream");
-
     const Graphite::Params params;
 
     size_t path_column_num;

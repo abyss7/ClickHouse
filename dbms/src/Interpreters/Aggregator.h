@@ -6,17 +6,14 @@
 
 #include <Poco/TemporaryFile.h>
 
-#include <common/logger_useful.h>
-
-#include <common/StringRef.h>
 #include <Common/Arena.h>
+#include <Common/ColumnsHashing.h>
 #include <Common/HashTable/FixedHashMap.h>
 #include <Common/HashTable/HashMap.h>
 #include <Common/HashTable/TwoLevelHashMap.h>
+#include <Common/LRUCache.h>
 #include <Common/ThreadPool.h>
 #include <Common/UInt128.h>
-#include <Common/LRUCache.h>
-#include <Common/ColumnsHashing.h>
 
 #include <DataStreams/IBlockStream_fwd.h>
 #include <DataStreams/SizeLimits.h>
@@ -31,6 +28,8 @@
 #include <Columns/ColumnVector.h>
 #include <Columns/ColumnNullable.h>
 #include <Columns/ColumnLowCardinality.h>
+
+#include <common/StringRef.h>
 
 
 namespace DB
@@ -947,8 +946,6 @@ protected:
     Int64 memory_usage_before_aggregation = 0;
 
     std::mutex mutex;
-
-    Logger * log = &Logger::get("Aggregator");
 
     /** Dynamically compiled library for aggregation, if any.
       * The meaning of dynamic compilation is to specialize code

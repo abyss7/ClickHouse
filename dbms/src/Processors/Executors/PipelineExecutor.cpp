@@ -29,7 +29,8 @@ static bool checkCanAddAdditionalInfoToException(const DB::Exception & exception
 }
 
 PipelineExecutor::PipelineExecutor(Processors & processors)
-    : processors(processors)
+    : WithLogger("PipelineExecutor")
+    , processors(processors)
     , cancelled(false)
     , finished(false)
     , num_processing_executors(0)

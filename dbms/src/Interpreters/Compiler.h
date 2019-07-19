@@ -9,13 +9,12 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include <common/logger_useful.h>
-
 #include <Core/Types.h>
 #include <Common/Exception.h>
 #include <Common/UInt128.h>
 #include <Common/SharedLibrary.h>
 #include <Common/ThreadPool.h>
+
 
 namespace DB
 {
@@ -25,7 +24,7 @@ namespace DB
   * Compilation is performed asynchronously, in separate threads, if there are free threads.
   * NOTE: There is no cleaning of obsolete and unnecessary results.
   */
-class Compiler
+class Compiler : public WithLogger
 {
 public:
     /** path - path to the directory with temporary files - the results of the compilation.
@@ -62,20 +61,10 @@ private:
 
     const std::string path;
     ThreadPool pool;
-
-    /// Number of calls to `getOrCount`.
-    Counts counts;
-
-    /// Compiled and open libraries. Or nullptr for libraries in the compilation process.
-    Libraries libraries;
-
-    /// Compiled files remaining from previous runs, but not yet open.
-    Files files;
-
+    Counts counts;       /// Number of calls to `getOrCount`.
+    Libraries libraries; /// Compiled and open libraries. Or nullptr for libraries in the compilation process.
+    Files files;         /// Compiled files remaining from previous runs, but not yet open.
     std::mutex mutex;
-
-    Logger * log = &Logger::get("Compiler");
-
 
     void compile(
         HashedKey hashed_key,

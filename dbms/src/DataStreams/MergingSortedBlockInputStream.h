@@ -4,8 +4,6 @@
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
-#include <common/logger_useful.h>
-
 #include <Core/Row.h>
 #include <Core/SortDescription.h>
 #include <Core/SortCursor.h>
@@ -59,7 +57,7 @@ inline void intrusive_ptr_release(detail::SharedBlock * ptr)
 
 /** Merges several sorted streams into one sorted stream.
   */
-class MergingSortedBlockInputStream : public IBlockInputStream
+class MergingSortedBlockInputStream : public IBlockInputStream, private WithLogger
 {
 public:
     /** limit - if isn't 0, then we can produce only first limit rows in sorted order.
@@ -255,8 +253,6 @@ private:
 
     template <typename TSortCursor>
     void merge(MutableColumns & merged_columns, std::priority_queue<TSortCursor> & queue);
-
-    Logger * log = &Logger::get("MergingSortedBlockInputStream");
 
     /// Read is finished.
     bool finished = false;

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <unordered_map>
+#include <Common/Logger.h>
+
+#include <atomic>
+#include <chrono>
 #include <list>
 #include <memory>
-#include <chrono>
 #include <mutex>
-#include <atomic>
-
-#include <common/logger_useful.h>
+#include <unordered_map>
 
 
 namespace DB
@@ -30,7 +30,7 @@ struct TrivialWeightFunction
 /// entries is due.
 /// Value weight should not change after insertion.
 template <typename TKey, typename TMapped, typename HashFunction = std::hash<TKey>, typename WeightFunction = TrivialWeightFunction<TMapped>>
-class LRUCache
+class LRUCache : public WithLogger
 {
 public:
     using Key = TKey;
@@ -44,7 +44,7 @@ private:
 
 public:
     LRUCache(size_t max_size_, const Delay & expiration_delay_ = Delay::zero())
-        : max_size(std::max(static_cast<size_t>(1), max_size_)), expiration_delay(expiration_delay_) {}
+        : WithLogger("LRUCache"), max_size(std::max(static_cast<size_t>(1), max_size_)), expiration_delay(expiration_delay_) {}
 
     MappedPtr get(const Key & key)
     {
@@ -325,7 +325,8 @@ private:
             auto it = cells.find(key);
             if (it == cells.end())
             {
-                LOG_ERROR(&Logger::get("LRUCache"), "LRUCache became inconsistent. There must be a bug in it.");
+                // FIXME: replace with ASSERT()
+                LOG(error) << "LRUCache became inconsistent. There must be a bug in it.";
                 abort();
             }
 
@@ -345,7 +346,8 @@ private:
 
         if (current_size > (1ull << 63))
         {
-            LOG_ERROR(&Logger::get("LRUCache"), "LRUCache became inconsistent. There must be a bug in it.");
+            // FIXME: replace with ASSERT()
+            LOG(error) << "LRUCache became inconsistent. There must be a bug in it.";
             abort();
         }
     }

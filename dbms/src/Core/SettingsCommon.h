@@ -4,6 +4,7 @@
 #include <DataStreams/SizeLimits.h>
 #include <Formats/FormatSettings.h>
 #include <common/StringRef.h>
+#include <Common/Logger.h>
 #include <Common/SettingsChanges.h>
 #include <Core/Types.h>
 #include <ext/singleton.h>
@@ -257,16 +258,7 @@ using SettingDistributedProductMode = SettingEnum<DistributedProductMode>;
 using SettingDateTimeInputFormat = SettingEnum<FormatSettings::DateTimeInputFormat>;
 
 
-enum class LogsLevel
-{
-    none = 0,    /// Disable
-    error,
-    warning,
-    information,
-    debug,
-    trace,
-};
-using SettingLogsLevel = SettingEnum<LogsLevel>;
+using SettingLogsLevel = SettingEnum<Logger::Level>;
 
 
 namespace details

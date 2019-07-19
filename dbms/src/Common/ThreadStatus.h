@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/StringRef.h>
+#include <Common/Logger.h>
 #include <Common/ProfileEvents.h>
 #include <Common/MemoryTracker.h>
 
@@ -64,7 +65,7 @@ public:
     UInt32 master_thread_number = 0;
     Int32 master_thread_os_id = -1;
 
-    LogsLevel client_logs_level = LogsLevel::none;
+    Logger::Level client_logs_level = Logger::Level::none;
 
     String query;
 };
@@ -135,7 +136,7 @@ public:
     }
 
     void attachInternalTextLogsQueue(const InternalTextLogsQueuePtr & logs_queue,
-                                     LogsLevel client_logs_level);
+                                     Logger::Level client_logs_level);
 
     /// Sets query context for current thread and its thread group
     /// NOTE: query_context have to be alive until detachQuery() is called

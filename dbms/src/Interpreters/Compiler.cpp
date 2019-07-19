@@ -32,7 +32,7 @@ namespace ErrorCodes
 }
 
 Compiler::Compiler(const std::string & path_, size_t threads)
-    : path(path_), pool(threads)
+    : WithLogger("Compiler"), path(path_), pool(threads)
 {
     Poco::File(path).createDirectory();
 

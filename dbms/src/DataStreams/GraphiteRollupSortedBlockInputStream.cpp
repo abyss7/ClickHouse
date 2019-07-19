@@ -15,7 +15,7 @@ namespace ErrorCodes
 GraphiteRollupSortedBlockInputStream::GraphiteRollupSortedBlockInputStream(
     const BlockInputStreams & inputs_, const SortDescription & description_, size_t max_block_size_,
     const Graphite::Params & params, time_t time_of_merge)
-    : MergingSortedBlockInputStream(inputs_, description_, max_block_size_),
+    : MergingSortedBlockInputStream(inputs_, description_, max_block_size_), WithLogger("GraphiteRollupSortedBlockInputStream"),
     params(params), time_of_merge(time_of_merge)
 {
     size_t max_size_of_aggregate_state = 0;

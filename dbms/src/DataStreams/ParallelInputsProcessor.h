@@ -1,18 +1,16 @@
 #pragma once
 
-#include <list>
-#include <queue>
-#include <atomic>
-#include <thread>
-#include <mutex>
-
-#include <common/logger_useful.h>
-
 #include <DataStreams/IBlockStream_fwd.h>
-#include <Common/setThreadName.h>
 #include <Common/CurrentMetrics.h>
 #include <Common/CurrentThread.h>
 #include <Common/ThreadPool.h>
+#include <Common/setThreadName.h>
+
+#include <atomic>
+#include <list>
+#include <mutex>
+#include <queue>
+#include <thread>
 
 
 /** Allows to process multiple block input streams (sources) in parallel, using specified number of threads.
@@ -60,7 +58,7 @@ struct ParallelInputsHandler
 
 
 template <typename Handler>
-class ParallelInputsProcessor
+class ParallelInputsProcessor : public WithLogger
 {
 public:
     /** additional_input_at_end - if not nullptr,
@@ -72,7 +70,7 @@ public:
       *   and only after the completion of this work, create blocks of keys that are not found.
       */
     ParallelInputsProcessor(const BlockInputStreams & inputs_, const BlockInputStreamPtr & additional_input_at_end_, size_t max_threads_, Handler & handler_)
-        : inputs(inputs_), additional_input_at_end(additional_input_at_end_), max_threads(std::min(inputs_.size(), max_threads_)), handler(handler_)
+        : WithLogger("ParallelInputsProcessor"), inputs(inputs_), additional_input_at_end(additional_input_at_end_), max_threads(std::min(inputs_.size(), max_threads_)), handler(handler_)
     {
         for (size_t i = 0; i < inputs_.size(); ++i)
             unprepared_inputs.emplace(inputs_[i], i);
@@ -134,7 +132,7 @@ public:
                   * (for example, the connection is broken for distributed query processing)
                   * - then do not care.
                   */
-                LOG_ERROR(log, "Exception while cancelling " << input->getName());
+                LOG(error) << "Exception while cancelling " << input->getName();
             }
         }
     }
@@ -346,8 +344,6 @@ private:
     std::atomic<bool> finish { false };
     /// Wait for the completion of all threads.
     std::atomic<bool> joined_threads { false };
-
-    Logger * log = &Logger::get("ParallelInputsProcessor");
 };
 
 
