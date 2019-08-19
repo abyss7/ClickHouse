@@ -1,4 +1,4 @@
-configure("base") {
+config("base") {
     cflags = [
         "-fdiagnostics-color=always",
         "-fno-strict-aliasing",
@@ -22,16 +22,22 @@ configure("base") {
         "-Wno-unknown-pragmas",
     ]
 
-    cxxflags = [
+    if (library == "shared_library") {
+        cflags += [
+            "-fPIC",
+        ]
+    }
+
+    cflags_cc = [
         "-std=c++17",
     ]
 
     ldflags = [
-        "-no-undefines",
+        "--no-undefined",
     ]
 }
 
-configure("debug") {
+config("debug") {
     cflags = [
         "-g",
         "-O0",

@@ -1,0 +1,20 @@
+config("includes") {
+    include_dirs = [ "include" ]
+}
+
+target(library, "common") {
+    sources = [
+        "src/phdr_cache.cpp",
+    ]
+
+    public = [
+        "include/common/logger_useful.h",
+        "include/common/phdr_cache.h",
+        "include/common/StringRef.h",
+    ]
+
+    libs = [ "dl" ]
+
+    public_configs = [ ":includes" ]
+    public_deps = [ "//contrib/cityhash102:cityhash" ]
+}

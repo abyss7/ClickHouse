@@ -1,0 +1,15 @@
+config("public") {
+    include_dirs = [ "include" ]
+}
+
+target(library, "cityhash") {
+    sources = [
+        "src/city.cc",
+    ]
+
+    public = [
+        "include/city.h",
+    ]
+
+    public_configs = [ ":public" ]
+}

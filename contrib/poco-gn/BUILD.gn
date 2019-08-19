@@ -11,19 +11,19 @@ config("private") {
     ]
 }
 
-target(library, "CppUnit") {
+config("public") {
+    include_dirs = [ "//contrib/poco/Foundation/include" ]
+}
+
+target(library, "PocoFoundation") {
     sources = [
-        "../poco/CppUnit/src/CppUnitException.cpp",
-        "../poco/CppUnit/src/TestCase.cpp",
-        "../poco/CppUnit/src/TestDecorator.cpp",
-        "../poco/CppUnit/src/TestFailure.cpp",
-        "../poco/CppUnit/src/TestResult.cpp",
-        "../poco/CppUnit/src/TestRunner.cpp",
-        "../poco/CppUnit/src/TestSuite.cpp",
-        "../poco/CppUnit/src/TextTestResult.cpp",
+        "//contrib/poco/Foundation/src/Exception.cpp",
     ]
 
-    defines = [
-        "CppUnit_EXPORTS",
+    public = [
+        "//contrib/poco/Foundation/include/Poco/Exception.h",
     ]
+
+    configs += [ ":private" ]
+    public_configs = [ ":public" ]
 }

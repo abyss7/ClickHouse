@@ -1,0 +1,11 @@
+source_set("client") {
+    sources = [
+        "client/Client.cpp",
+        "client/TestHint.h",
+    ]
+
+    configs += [ "//dbms:includes" ]
+    deps = [
+        "//dbms:common_io",
+    ]
+}
