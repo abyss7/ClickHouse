@@ -1,11 +1,12 @@
 source_set("client") {
     sources = [
         "client/Client.cpp",
+        "client/ConnectionParameters.h",
         "client/TestHint.h",
     ]
 
-    configs += [ "//dbms:includes" ]
     deps = [
-        "//dbms:common_io",
+        "//dbms/src:base",
+        "//dbms/src:io",
     ]
 }

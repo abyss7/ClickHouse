@@ -1,0 +1,59 @@
+config("includes") {
+    include_dirs = [ "." ]
+}
+
+target(library, "base") {
+    sources = [
+        "Common/Allocator.h",
+        "Common/Arena.h",
+        "Common/Exception.cpp",
+        "Common/thread_local_rng.h",
+    ]
+
+    public = [
+        "Common/Exception.h",
+    ]
+
+    deps = [
+        ":io",
+        "//libs/libcommon:common",
+    ]
+
+    public_configs = [ ":includes" ]
+    public_deps = [
+        "//contrib/poco-gn:PocoFoundation",
+    ]
+}
+
+target(library, "core") {
+    sources = [
+        "Core/Settings.h",
+        "Core/SettingsCommon.h",
+    ]
+}
+
+target(library, "data_streams") {
+    sources = [
+        "DataStreams/SizeLimits.h",
+    ]
+}
+
+target(library, "io") {
+    public = [
+        "IO/ConnectionTimeouts.h",
+        "IO/Operators.h",
+    ]
+
+    public_deps = [
+        "//contrib/libpcg-random:pcg_random",
+    ]
+}
+
+target(library, "string_utils") {
+    sources = [
+        "Common/StringUtils/StringUtils.cpp",
+        "Common/StringUtils/StringUtils.h",
+    ]
+
+    public_configs = [ ":includes" ]
+}

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <pcg_random.hpp>
 
 /// Fairly good thread-safe random number generator, but probably slow-down thread creation a little.

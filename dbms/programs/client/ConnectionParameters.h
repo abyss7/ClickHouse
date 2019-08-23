@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Core/Protocol.h"
+#include "IO/ConnectionTimeouts.h"
+
 #include <string>
-#include <Core/Protocol.h>
-#include <IO/ConnectionTimeouts.h>
 
 namespace Poco::Util
 {

@@ -2,46 +2,12 @@ declare_args() {
     split_binary = false
 }
 
-config("includes") {
-    include_dirs = [
-        "src",
-    ]
-}
-
-target(library, "common_io") {
-    sources = [
-        "src/Common/Exception.cpp",
-    ]
-
-    public = [
-        "src/Common/Exception.h",
-    ]
-
-    deps = [
-        "//libs/libcommon:common",
-    ]
-
-    public_configs = [ ":includes" ]
-    public_deps = [
-        "//contrib/poco-gn:PocoFoundation",
-    ]
-}
-
-target(library, "string_utils") {
-    sources = [
-        "src/Common/StringUtils/StringUtils.cpp",
-        "src/Common/StringUtils/StringUtils.h",
-    ]
-
-    public_configs = [ ":includes" ]
-}
-
 if (!split_binary) {
     executable("clickhouse") {
         sources = [ "programs/main.cpp" ]
 
         deps = [
-            ":string_utils",
+            "src:string_utils",
             "programs:client",
 
             "//libs/libcommon:common",

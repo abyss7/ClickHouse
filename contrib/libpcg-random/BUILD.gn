@@ -1,0 +1,11 @@
+config("includes") {
+    include_dirs = [ "include" ]
+}
+
+source_set("pcg_random") {
+    public = [
+        "include/pcg_random.hpp",
+    ]
+
+    public_configs = [ ":includes" ]
+}

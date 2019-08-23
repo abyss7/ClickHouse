@@ -1,10 +1,11 @@
 #pragma once
 
 #include <Poco/Timespan.h>
-#include <Core/Settings.h>
-
-#include <Interpreters/Context.h>
 #include <Poco/Util/AbstractConfiguration.h>
+
+#include "Core/Settings.h"
+#include "Interpreters/Context.h"
+
 
 namespace DB
 {
