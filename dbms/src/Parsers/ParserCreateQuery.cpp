@@ -897,6 +897,108 @@ bool ParserCreateDictionaryQuery::parseImpl(IParser::Pos & pos, ASTPtr & node, E
     return true;
 }
 
+bool ParserCreateStreamQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
+{
+    ParserKeyword s_create("CREATE");
+    ParserKeyword s_attach("ATTACH");
+    ParserKeyword s_stream("STREAM");
+    ParserKeyword s_if_not_exists("IF NOT EXISTS");
+    ParserKeyword s_to("TO");
+    ParserKeyword s_engine("ENGINE");
+    ParserKeyword s_settings("SETTINGS");
+    ParserToken s_dot(TokenType::Dot);
+    ParserToken s_eq(TokenType::Equals);
+    ParserIdentifier name_p;
+
+    /// CREATE or ATTACH
+    bool attach = false;
+    if (!s_create.ignore(pos, expected))
+    {
+        if (s_attach.ignore(pos, expected))
+            attach = true;
+        else
+            return false;
+    }
+
+    /// [IF NOT EXISTS]
+    bool if_not_exists = false;
+    if (s_if_not_exists.ignore(pos, expected))
+        if_not_exists = true;
+
+    /// STREAM
+    if (!s_stream.ignore(pos, expected))
+        return false;
+
+    /// [db.]name
+    ASTPtr table;
+    if (!name_p.parse(pos, table, expected))
+        return false;
+
+    ASTPtr database;
+    if (s_dot.ignore(pos, expected))
+    {
+        database = table;
+        if (!name_p.parse(pos, table, expected))
+            return false;
+    }
+
+    /// TO
+    if (!s_to.ignore(pos, expected))
+        return false;
+
+    /// Another [db.]name
+    ASTPtr to_table;
+    if (!name_p.parse(pos, to_table, expected))
+        return false;
+
+    ASTPtr to_database;
+    if (s_dot.ignore(pos, expected))
+    {
+        to_database = to_table;
+        if (!name_p.parse(pos, to_table, expected))
+            return false;
+    }
+
+    ASTPtr engine;
+    if (!s_engine.ignore(pos, expected))
+        return false;
+
+    s_eq.ignore(pos, expected);
+
+    ParserIdentifierWithOptionalParameters ident_with_optional_params_p;
+    if (!ident_with_optional_params_p.parse(pos, engine, expected))
+        return false;
+
+    ASTPtr settings;
+    if (s_settings.ignore(pos, expected))
+    {
+        ParserSetQuery settings_p(/* parse_only_internals_ = */ true);
+        if (!settings_p.parse(pos, settings, expected))
+            return false;
+    }
+
+    auto query = std::make_shared<ASTCreateQuery>();
+
+    query->attach = attach;
+    query->if_not_exists = if_not_exists;
+    query->is_stream = true;
+
+    tryGetIdentifierNameInto(database, query->database);
+    tryGetIdentifierNameInto(table, query->table);
+    tryGetIdentifierNameInto(to_database, query->to_database);
+    tryGetIdentifierNameInto(to_table, query->to_table);
+
+    /// Using `storage` field for our stream settings
+    auto storage = std::make_shared<ASTStorage>();
+    storage->set(storage->engine, engine);
+    storage->set(storage->settings, settings);
+    query->set(query->storage, storage);
+
+    node = query;
+
+    return true;
+}
+
 
 bool ParserCreateQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
 {
@@ -905,12 +1007,14 @@ bool ParserCreateQuery::parseImpl(Pos & pos, ASTPtr & node, Expected & expected)
     ParserCreateViewQuery view_p;
     ParserCreateDictionaryQuery dictionary_p;
     ParserCreateLiveViewQuery live_view_p;
+    ParserCreateStreamQuery stream_p;
 
     return table_p.parse(pos, node, expected)
         || database_p.parse(pos, node, expected)
         || view_p.parse(pos, node, expected)
         || dictionary_p.parse(pos, node, expected)
-        || live_view_p.parse(pos, node, expected);
+        || live_view_p.parse(pos, node, expected)
+        || stream_p.parse(pos, node, expected);
 }
 
 }

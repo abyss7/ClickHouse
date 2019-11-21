@@ -342,8 +342,15 @@ protected:
 class ParserCreateDictionaryQuery : public IParserBase
 {
 protected:
-    const char * getName() const override { return "CREATE DICTIONARY"; }
+    const char * getName() const override { return "CREATE DICTIONARY query"; }
     bool parseImpl(Pos & pos, ASTPtr & node, Expected & expected) override;
+};
+
+class ParserCreateStreamQuery : public IParserBase
+{
+protected:
+    const char * getName() const { return "CREATE STREAM query"; }
+    bool parseImpl(Pos & pos, ASTPtr & node, Expected & expected);
 };
 
 
@@ -368,6 +375,9 @@ protected:
   *
   * Or:
   * CREATE[OR REPLACE]|ATTACH [[MATERIALIZED] VIEW] | [VIEW]] [IF NOT EXISTS] [db.]name [TO [db.]name] [ENGINE = engine] [POPULATE] AS SELECT ...
+  *
+  * Or:
+  * CREATE|ATTACH STREAM [IF NOT EXISTS] [db.]name TO [db2.]name2 ENGINE = engine [SETTINGS …]
   */
 class ParserCreateQuery : public IParserBase
 {

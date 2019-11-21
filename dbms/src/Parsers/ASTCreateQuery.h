@@ -59,13 +59,14 @@ public:
     bool is_view{false};
     bool is_materialized_view{false};
     bool is_live_view{false};
+    bool is_stream{false}; /// CREATE STREAM
     bool is_populate{false};
     bool is_dictionary{false}; /// CREATE DICTIONARY
     bool replace_view{false}; /// CREATE OR REPLACE VIEW
     ASTColumns * columns_list = nullptr;
     ASTExpressionList * dictionary_attributes_list = nullptr; /// attributes of dictionary
     ASTExpressionList * tables = nullptr;
-    String to_database;   /// For CREATE MATERIALIZED VIEW mv TO table.
+    String to_database;   /// For `CREATE MATERIALIZED VIEW mv TO table` or `CREATE STREAM st TO table`
     String to_table;
     ASTStorage * storage = nullptr;
     String as_database;
