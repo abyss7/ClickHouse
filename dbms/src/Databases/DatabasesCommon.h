@@ -19,25 +19,18 @@ class Context;
 class DatabaseWithOwnTablesBase : public IDatabase
 {
 public:
-    bool isTableExist(
-        const Context & context,
-        const String & table_name) const override;
-
-    bool isDictionaryExist(const Context & context, const String & dictionary_name) const override;
-
-    StoragePtr tryGetTable(
-        const Context & context,
-        const String & table_name) const override;
+    ObjectType getObjectType(const Context & context, const String & object_name) const override;
+    StoragePtr tryGetObject(const Context & context, const String & object_name) const override;
 
     bool empty(const Context & context) const override;
 
     void attachTable(const String & table_name, const StoragePtr & table) override;
-
-    void attachDictionary(const String & name, const Context & context, bool reload) override;
-
     StoragePtr detachTable(const String & table_name) override;
 
+    void attachDictionary(const String & name, const Context & context, bool reload) override;
     void detachDictionary(const String & name, const Context & context, bool reload) override;
+
+    void attachStream(const String & stream_name) override;
 
     DatabaseTablesIteratorPtr getTablesIterator(const Context & context, const FilterByNameFunction & filter_by_table_name = {}) override;
 
@@ -55,6 +48,7 @@ protected:
     mutable std::mutex mutex;
     Tables tables;
     Dictionaries dictionaries;
+    Streams streams;
 
     DatabaseWithOwnTablesBase(String name_) : name(std::move(name_)) { }
 };

@@ -29,6 +29,7 @@ namespace ErrorCodes
     extern const int UNKNOWN_TABLE;
     extern const int LOGICAL_ERROR;
     extern const int DICTIONARY_ALREADY_EXISTS;
+    extern const int STREAM_ALREADY_EXISTS;
 }
 
 namespace
@@ -50,39 +51,103 @@ StoragePtr getDictionaryStorage(const Context & context, const String & table_na
 
 }
 
-bool DatabaseWithOwnTablesBase::isTableExist(
-    const Context & /*context*/,
-    const String & table_name) const
+IDatabase::ObjectType DatabaseWithOwnTablesBase::getObjectType(const Context &, const String & object_name) const
 {
     std::lock_guard lock(mutex);
-    return tables.find(table_name) != tables.end() || dictionaries.find(table_name) != dictionaries.end();
+
+    if (tables.find(object_name) != tables.end())
+        return TABLE;
+    else if (dictionaries.find(object_name) != dictionaries.end())
+        return DICTIONARY;
+    else if (streams.find(object_name) != streams.end())
+        return STREAM;
+
+    return NOT_EXIST;
 }
 
-bool DatabaseWithOwnTablesBase::isDictionaryExist(
-    const Context & /*context*/,
-    const String & dictionary_name) const
+StoragePtr DatabaseWithOwnTablesBase::tryGetObject(const Context & context, const String & object_name) const
 {
-    std::lock_guard lock(mutex);
-    return dictionaries.find(dictionary_name) != dictionaries.end();
-}
+    const auto type = getObjectType(context, object_name);
 
-StoragePtr DatabaseWithOwnTablesBase::tryGetTable(
-    const Context & context,
-    const String & table_name) const
-{
+    if (type == TABLE)
     {
         std::lock_guard lock(mutex);
-        auto it = tables.find(table_name);
+
+        auto it = tables.find(object_name);
         if (it != tables.end())
             return it->second;
     }
-
-    if (isDictionaryExist(context, table_name))
+    else if (type == DICTIONARY)
         /// We don't need lock database here, because database doesn't store dictionary itself
         /// just metadata
-        return getDictionaryStorage(context, table_name, getDatabaseName());
+        return getDictionaryStorage(context, object_name, getDatabaseName());
 
     return {};
+}
+
+void DatabaseWithOwnTablesBase::attachTable(const String & table_name, const StoragePtr & table)
+{
+    std::lock_guard lock(mutex);
+    if (!tables.emplace(table_name, table).second)
+        throw Exception("Table " + name + "." + table_name + " already exists.", ErrorCodes::TABLE_ALREADY_EXISTS);
+}
+
+StoragePtr DatabaseWithOwnTablesBase::detachTable(const String & table_name)
+{
+    StoragePtr res;
+    {
+        std::lock_guard lock(mutex);
+        if (dictionaries.count(table_name))
+            throw Exception("Cannot detach dictionary " + name + "." + table_name + " as table, use DETACH DICTIONARY query.", ErrorCodes::UNKNOWN_TABLE);
+
+        auto it = tables.find(table_name);
+        if (it == tables.end())
+            throw Exception("Table " + name + "." + table_name + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
+        res = it->second;
+        tables.erase(it);
+    }
+
+    return res;
+}
+
+void DatabaseWithOwnTablesBase::attachDictionary(const String & dictionary_name, const Context & context, bool load)
+{
+    const auto & external_loader = context.getExternalDictionariesLoader();
+
+    String full_name = getDatabaseName() + "." + dictionary_name;
+    {
+        std::lock_guard lock(mutex);
+        auto status = external_loader.getCurrentStatus(full_name);
+        if (status != ExternalLoader::Status::NOT_EXIST || !dictionaries.emplace(dictionary_name).second)
+            throw Exception(
+                      "Dictionary " + full_name + " already exists.",
+                      ErrorCodes::DICTIONARY_ALREADY_EXISTS);
+    }
+
+    if (load)
+        external_loader.reload(full_name, true);
+}
+
+void DatabaseWithOwnTablesBase::detachDictionary(const String & dictionary_name, const Context & context, bool reload)
+{
+    {
+        std::lock_guard lock(mutex);
+        auto it = dictionaries.find(dictionary_name);
+        if (it == dictionaries.end())
+            throw Exception("Dictionary " + name + "." + dictionary_name + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
+        dictionaries.erase(it);
+    }
+
+    if (reload)
+        context.getExternalDictionariesLoader().reload(getDatabaseName() + "." + dictionary_name);
+
+}
+
+void DatabaseWithOwnTablesBase::attachStream(const String & stream_name)
+{
+    std::lock_guard lock(mutex);
+    if (!streams.emplace(stream_name).second)
+        throw Exception("Stream " + name + "." + stream_name + " already exists.", ErrorCodes::STREAM_ALREADY_EXISTS);
 }
 
 DatabaseTablesIteratorPtr DatabaseWithOwnTablesBase::getTablesWithDictionaryTablesIterator(const Context & context, const FilterByNameFunction & filter_by_name)
@@ -141,65 +206,6 @@ bool DatabaseWithOwnTablesBase::empty(const Context & /*context*/) const
 {
     std::lock_guard lock(mutex);
     return tables.empty() && dictionaries.empty();
-}
-
-StoragePtr DatabaseWithOwnTablesBase::detachTable(const String & table_name)
-{
-    StoragePtr res;
-    {
-        std::lock_guard lock(mutex);
-        if (dictionaries.count(table_name))
-            throw Exception("Cannot detach dictionary " + name + "." + table_name + " as table, use DETACH DICTIONARY query.", ErrorCodes::UNKNOWN_TABLE);
-
-        auto it = tables.find(table_name);
-        if (it == tables.end())
-            throw Exception("Table " + name + "." + table_name + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
-        res = it->second;
-        tables.erase(it);
-    }
-
-    return res;
-}
-
-void DatabaseWithOwnTablesBase::detachDictionary(const String & dictionary_name, const Context & context, bool reload)
-{
-    {
-        std::lock_guard lock(mutex);
-        auto it = dictionaries.find(dictionary_name);
-        if (it == dictionaries.end())
-            throw Exception("Dictionary " + name + "." + dictionary_name + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
-        dictionaries.erase(it);
-    }
-
-    if (reload)
-        context.getExternalDictionariesLoader().reload(getDatabaseName() + "." + dictionary_name);
-
-}
-
-void DatabaseWithOwnTablesBase::attachTable(const String & table_name, const StoragePtr & table)
-{
-    std::lock_guard lock(mutex);
-    if (!tables.emplace(table_name, table).second)
-        throw Exception("Table " + name + "." + table_name + " already exists.", ErrorCodes::TABLE_ALREADY_EXISTS);
-}
-
-
-void DatabaseWithOwnTablesBase::attachDictionary(const String & dictionary_name, const Context & context, bool load)
-{
-    const auto & external_loader = context.getExternalDictionariesLoader();
-
-    String full_name = getDatabaseName() + "." + dictionary_name;
-    {
-        std::lock_guard lock(mutex);
-        auto status = external_loader.getCurrentStatus(full_name);
-        if (status != ExternalLoader::Status::NOT_EXIST || !dictionaries.emplace(dictionary_name).second)
-            throw Exception(
-                      "Dictionary " + full_name + " already exists.",
-                      ErrorCodes::DICTIONARY_ALREADY_EXISTS);
-    }
-
-    if (load)
-        external_loader.reload(full_name, true);
 }
 
 void DatabaseWithOwnTablesBase::shutdown()

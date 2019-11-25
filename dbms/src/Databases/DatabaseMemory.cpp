@@ -40,12 +40,19 @@ void DatabaseMemory::attachDictionary(const String & /*name*/, const Context & /
     throw Exception("There is no ATTACH DICTIONARY query for DatabaseMemory", ErrorCodes::UNSUPPORTED_METHOD);
 }
 
-void DatabaseMemory::createDictionary(
-    const Context & /*context*/,
-    const String & /*dictionary_name*/,
-    const ASTPtr & /*query*/)
+void DatabaseMemory::createDictionary(const Context & /*context*/, const String & /*dictionary_name*/, const ASTPtr & /*query*/)
 {
     throw Exception("There is no CREATE DICTIONARY query for DatabaseMemory", ErrorCodes::UNSUPPORTED_METHOD);
+}
+
+void DatabaseMemory::createStream(const Context &, const String &, const ASTPtr &)
+{
+    throw Exception("There is no CREATE STREAM query for DatabaseMemory", ErrorCodes::UNSUPPORTED_METHOD);
+}
+
+void DatabaseMemory::attachStream(const String &)
+{
+    throw Exception("There is no ATTACH STREAM query for DatabaseMemory", ErrorCodes::UNSUPPORTED_METHOD);
 }
 
 

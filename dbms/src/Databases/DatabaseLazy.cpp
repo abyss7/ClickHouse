@@ -81,6 +81,18 @@ void DatabaseLazy::createDictionary(
 }
 
 
+void DatabaseLazy::createStream(const Context &, const String &, const ASTPtr &)
+{
+    throw Exception("Lazy engine can be used only with *Log tables.", ErrorCodes::UNSUPPORTED_METHOD);
+}
+
+
+void DatabaseLazy::attachStream(const String &)
+{
+    throw Exception("Lazy engine can be used only with *Log tables.", ErrorCodes::UNSUPPORTED_METHOD);
+}
+
+
 void DatabaseLazy::removeTable(
     const Context & context,
     const String & table_name)
@@ -107,12 +119,6 @@ ASTPtr DatabaseLazy::tryGetCreateDictionaryQuery(const Context & /*context*/, co
 {
     return nullptr;
 }
-
-bool DatabaseLazy::isDictionaryExist(const Context & /*context*/, const String & /*table_name*/) const
-{
-    return false;
-}
-
 
 DatabaseDictionariesIteratorPtr DatabaseLazy::getDictionariesIterator(
     const Context & /*context*/,
@@ -191,37 +197,40 @@ void DatabaseLazy::drop()
     DatabaseOnDisk::drop(*this);
 }
 
-bool DatabaseLazy::isTableExist(
-    const Context & /* context */,
-    const String & table_name) const
+IDatabase::ObjectType DatabaseLazy::getObjectType(const Context &, const String & object_name) const
 {
     SCOPE_EXIT({ clearExpiredTables(); });
+
     std::lock_guard lock(tables_mutex);
-    return tables_cache.find(table_name) != tables_cache.end();
+
+    if (tables_cache.find(object_name) != tables_cache.end())
+        return TABLE;
+
+    return NOT_EXIST;
 }
 
-StoragePtr DatabaseLazy::tryGetTable(
+StoragePtr DatabaseLazy::tryGetObject(
     const Context & context,
-    const String & table_name) const
+    const String & object_name) const
 {
     SCOPE_EXIT({ clearExpiredTables(); });
     {
         std::lock_guard lock(tables_mutex);
-        auto it = tables_cache.find(table_name);
+        auto it = tables_cache.find(object_name);
         if (it == tables_cache.end())
-            throw Exception("Table " + backQuote(getDatabaseName()) + "." + backQuote(table_name) + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
+            throw Exception("Table " + backQuote(getDatabaseName()) + "." + backQuote(object_name) + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
 
         if (it->second.table)
         {
             cache_expiration_queue.erase(it->second.expiration_iterator);
             it->second.last_touched = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            it->second.expiration_iterator = cache_expiration_queue.emplace(cache_expiration_queue.end(), it->second.last_touched, table_name);
+            it->second.expiration_iterator = cache_expiration_queue.emplace(cache_expiration_queue.end(), it->second.last_touched, object_name);
 
             return it->second.table;
         }
     }
 
-    return loadTable(context, table_name);
+    return loadTable(context, object_name);
 }
 
 DatabaseTablesIteratorPtr DatabaseLazy::getTablesIterator(const Context & context, const FilterByNameFunction & filter_by_table_name)
@@ -416,7 +425,7 @@ void DatabaseLazyIterator::next()
 {
     current_storage.reset();
     ++iterator;
-    while (isValid() && !database.isTableExist(context, *iterator))
+    while (isValid() && !database.getObjectType(context, *iterator))
         ++iterator;
 }
 
@@ -433,7 +442,7 @@ const String & DatabaseLazyIterator::name() const
 const StoragePtr & DatabaseLazyIterator::table() const
 {
     if (!current_storage)
-        current_storage = database.tryGetTable(context, *iterator);
+        current_storage = database.tryGetObject(context, *iterator);
     return current_storage;
 }
 

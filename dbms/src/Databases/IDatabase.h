@@ -105,20 +105,19 @@ public:
         Context & context,
         bool has_force_restore_data_flag) = 0;
 
-    /// Check the existence of the table.
-    virtual bool isTableExist(
-        const Context & context,
-        const String & name) const = 0;
+    enum ObjectType
+    {
+        NOT_EXIST = 0,
+        TABLE,
+        DICTIONARY,
+        STREAM,
+    };
 
-    /// Check the existence of the dictionary
-    virtual bool isDictionaryExist(
-        const Context & context,
-        const String & name) const = 0;
+    /// Check the existence and return the type of named object from metadata.
+    virtual ObjectType getObjectType(const Context & context, const String & object_name) const = 0;
 
     /// Get the table for work. Return nullptr if there is no table.
-    virtual StoragePtr tryGetTable(
-        const Context & context,
-        const String & name) const = 0;
+    virtual StoragePtr tryGetObject(const Context & context, const String & object_name) const = 0;
 
     using FilterByNameFunction = std::function<bool(const String &)>;
 
@@ -151,6 +150,12 @@ public:
         const String & dictionary_name,
         const ASTPtr & query) = 0;
 
+    /// Add the stream to the database. Record its presence in the metadata.
+    virtual void createStream(
+        const Context & context,
+        const String & stream_name,
+        const ASTPtr & query) = 0;
+
     /// Delete the table from the database. Delete the metadata.
     virtual void removeTable(
         const Context & context,
@@ -167,6 +172,8 @@ public:
     /// Add dictionary to the database, but do not add it to the metadata. The database may not support this method.
     /// load is false when we starting up and lazy_load is true, so we don't want to load dictionaries synchronously.
     virtual void attachDictionary(const String & name, const Context & context, bool reload = true) = 0;
+
+    virtual void attachStream(const String & name) = 0;
 
     /// Forget about the table without deleting it, and return it. The database may not support this method.
     virtual StoragePtr detachTable(const String & name) = 0;

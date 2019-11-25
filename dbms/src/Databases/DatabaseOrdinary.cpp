@@ -238,6 +238,11 @@ void DatabaseOrdinary::createDictionary(
     DatabaseOnDisk::createDictionary(*this, context, dictionary_name, query);
 }
 
+void DatabaseOrdinary::createStream(const Context & context, const String & stream_name, const ASTPtr & query)
+{
+    DatabaseOnDisk::createStream(*this, context, stream_name, query);
+}
+
 void DatabaseOrdinary::removeTable(
     const Context & context,
     const String & table_name)

@@ -166,7 +166,7 @@ BlockIO InterpreterDropQuery::executeToDictionary(
 
     DatabasePtr database = tryGetDatabase(database_name, false);
 
-    if (!database || !database->isDictionaryExist(context, dictionary_name))
+    if (!database || database->getObjectType(context, dictionary_name) != IDatabase::DICTIONARY)
     {
         if (!if_exists)
             throw Exception(
@@ -292,7 +292,7 @@ DatabaseAndTable InterpreterDropQuery::tryGetDatabaseAndTable(String & database_
 
     if (database)
     {
-        StoragePtr table = database->tryGetTable(context, table_name);
+        StoragePtr table = database->tryGetObject(context, table_name);
         if (!table && !if_exists)
             throw Exception("Table " + backQuoteIfNeed(database_name) + "." + backQuoteIfNeed(table_name) + " doesn't exist.",
                             ErrorCodes::UNKNOWN_TABLE);

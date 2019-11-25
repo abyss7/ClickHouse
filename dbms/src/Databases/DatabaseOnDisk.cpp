@@ -38,6 +38,7 @@ namespace ErrorCodes
     extern const int UNKNOWN_TABLE;
     extern const int DICTIONARY_ALREADY_EXISTS;
     extern const int EMPTY_LIST_OF_COLUMNS_PASSED;
+    extern const int STREAM_ALREADY_EXISTS;
 }
 
 
@@ -219,11 +220,14 @@ void DatabaseOnDisk::createTable(
     /// A race condition would be possible if a table with the same name is simultaneously created using CREATE and using ATTACH.
     /// But there is protection from it - see using DDLGuard in InterpreterCreateQuery.
 
-    if (database.isDictionaryExist(context, table_name))
+    if (database.getObjectType(context, table_name) == IDatabase::DICTIONARY)
         throw Exception("Dictionary " + backQuote(database.getDatabaseName()) + "." + backQuote(table_name) + " already exists.",
             ErrorCodes::DICTIONARY_ALREADY_EXISTS);
 
-    if (database.isTableExist(context, table_name))
+    if (database.getObjectType(context, table_name) == IDatabase::STREAM)
+        throw Exception("Stream " + backQuote(database.getDatabaseName()) + "." + backQuote(table_name) + " already exists.", ErrorCodes::STREAM_ALREADY_EXISTS);
+
+    if (database.getObjectType(context, table_name) == IDatabase::TABLE)
         throw Exception("Table " + backQuote(database.getDatabaseName()) + "." + backQuote(table_name) + " already exists.", ErrorCodes::TABLE_ALREADY_EXISTS);
 
     String table_metadata_path = database.getObjectMetadataPath(table_name);
@@ -275,10 +279,13 @@ void DatabaseOnDisk::createDictionary(
 
     /// A race condition would be possible if a dictionary with the same name is simultaneously created using CREATE and using ATTACH.
     /// But there is protection from it - see using DDLGuard in InterpreterCreateQuery.
-    if (database.isDictionaryExist(context, dictionary_name))
+    if (database.getObjectType(context, dictionary_name) == IDatabase::DICTIONARY)
         throw Exception("Dictionary " + backQuote(database.getDatabaseName()) + "." + backQuote(dictionary_name) + " already exists.", ErrorCodes::DICTIONARY_ALREADY_EXISTS);
 
-    if (database.isTableExist(context, dictionary_name))
+    if (database.getObjectType(context, dictionary_name) == IDatabase::STREAM)
+        throw Exception("Stream " + backQuote(database.getDatabaseName()) + "." + backQuote(dictionary_name) + " already exists.", ErrorCodes::STREAM_ALREADY_EXISTS);
+
+    if (database.getObjectType(context, dictionary_name) == IDatabase::TABLE)
         throw Exception("Table " + backQuote(database.getDatabaseName()) + "." + backQuote(dictionary_name) + " already exists.", ErrorCodes::TABLE_ALREADY_EXISTS);
 
 
@@ -322,11 +329,61 @@ void DatabaseOnDisk::createDictionary(
 }
 
 
-void DatabaseOnDisk::removeTable(
-    IDatabase & database,
-    const Context & /* context */,
-    const String & table_name,
-    Poco::Logger * log)
+void DatabaseOnDisk::createStream(IDatabase & database, const Context & context, const String & stream_name, const ASTPtr & query)
+{
+    const auto & settings = context.getSettingsRef();
+
+    /** The code is based on the assumption that all threads share the same order of operations
+      * - creating the .sql.tmp file;
+      * - adding a dictionary to `dictionaries`;
+      * - rename .sql.tmp to .sql.
+      */
+
+    /// A race condition would be possible if a dictionary with the same name is simultaneously created using CREATE and using ATTACH.
+    /// But there is protection from it - see using DDLGuard in InterpreterCreateQuery.
+    if (database.getObjectType(context, stream_name) == IDatabase::DICTIONARY)
+        throw Exception("Dictionary " + backQuote(database.getDatabaseName()) + "." + backQuote(stream_name) + " already exists.", ErrorCodes::DICTIONARY_ALREADY_EXISTS);
+
+    if (database.getObjectType(context, stream_name) == IDatabase::STREAM)
+        throw Exception("Stream " + backQuote(database.getDatabaseName()) + "." + backQuote(stream_name) + " already exists.", ErrorCodes::STREAM_ALREADY_EXISTS);
+
+    if (database.getObjectType(context, stream_name) == IDatabase::TABLE)
+        throw Exception("Table " + backQuote(database.getDatabaseName()) + "." + backQuote(stream_name) + " already exists.", ErrorCodes::TABLE_ALREADY_EXISTS);
+
+    const String metadata_path = database.getObjectMetadataPath(stream_name);
+    const String metadata_tmp_path = metadata_path + ".tmp";
+    String statement;
+
+    {
+        statement = getObjectDefinitionFromCreateQuery(query);
+
+        /// Exclusive flags guarantees, that table is not created right now in another thread. Otherwise, exception will be thrown.
+        WriteBufferFromFile out(metadata_tmp_path, statement.size(), O_WRONLY | O_CREAT | O_EXCL);
+        writeString(statement, out);
+        out.next();
+        if (settings.fsync_metadata)
+            out.sync();
+        out.close();
+    }
+
+    try
+    {
+        /// Add a stream to the set of known streams.
+        database.attachStream(stream_name);
+
+        /// If it was ATTACH query and file with table metadata already exist
+        /// (so, ATTACH is done after DETACH), then rename atomically replaces old file with new one.
+        Poco::File(metadata_tmp_path).renameTo(metadata_path);
+    }
+    catch (...)
+    {
+        Poco::File(metadata_tmp_path).remove();
+        throw;
+    }
+}
+
+
+void DatabaseOnDisk::removeTable(IDatabase & database, const Context & /* context */, const String & table_name, Poco::Logger * log)
 {
     StoragePtr res = database.detachTable(table_name);
 
@@ -389,7 +446,7 @@ ASTPtr DatabaseOnDisk::getCreateTableQueryImpl(
     if (!ast && throw_on_error)
     {
         /// Handle system.* tables for which there are no table.sql files.
-        bool has_table = database.tryGetTable(context, table_name) != nullptr;
+        bool has_table = !!database.tryGetObject(context, table_name);
 
         auto msg = has_table
                    ? "There is no CREATE TABLE query for table "
@@ -415,7 +472,7 @@ ASTPtr DatabaseOnDisk::getCreateDictionaryQueryImpl(
     if (!ast && throw_on_error)
     {
         /// Handle system.* tables for which there are no table.sql files.
-        bool has_dictionary = database.isDictionaryExist(context, dictionary_name);
+        bool has_dictionary = database.getObjectType(context, dictionary_name) == IDatabase::DICTIONARY;
 
         auto msg = has_dictionary ? "There is no CREATE DICTIONARY query for table " : "There is no metadata file for dictionary ";
 

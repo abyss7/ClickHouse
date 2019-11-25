@@ -629,7 +629,7 @@ BlockIO InterpreterCreateQuery::createTable(ASTCreateQuery & create)
             guard = context.getDDLGuard(database_name, table_name);
 
             /// Table can be created before or it can be created concurrently in another thread, while we were waiting in DDLGuard.
-            if (database->isTableExist(context, table_name))
+            if (database->getObjectType(context, table_name))
             {
                 /// TODO Check structure of table
                 if (create.if_not_exists)
@@ -715,7 +715,7 @@ BlockIO InterpreterCreateQuery::createDictionary(ASTCreateQuery & create)
     auto guard = context.getDDLGuard(database_name, dictionary_name);
     DatabasePtr database = context.getDatabase(database_name);
 
-    if (database->isDictionaryExist(context, dictionary_name))
+    if (database->getObjectType(context, dictionary_name) == IDatabase::DICTIONARY)
     {
         /// TODO Check structure of dictionary
         if (create.if_not_exists)
@@ -740,6 +740,38 @@ BlockIO InterpreterCreateQuery::createDictionary(ASTCreateQuery & create)
     return {};
 }
 
+BlockIO InterpreterCreateQuery::createStream(ASTCreateQuery & create)
+{
+    /// TODO: implement ATTACH support.
+
+    const String database_name = create.database.empty() ? context.getCurrentDatabase() : create.database;
+
+    auto guard = context.getDDLGuard(database_name, create.table);
+    auto database = context.getDatabase(database_name);
+
+    const String current_database = context.getCurrentDatabase();
+    if (create.to_database.empty())
+        create.to_database = current_database;
+
+    /// Streams don't store their own column descriptions - the columns are always retrieved from the target storage.
+    /// After ALTER of target storage it's required to DETACH/ATTACH the stream.
+
+    auto as_storage = context.getTable(create.to_database, create.to_table);
+    auto as_storage_lock = as_storage->lockStructureForShare(false, context.getCurrentQueryId());
+
+    const auto columns = as_storage->getColumns();
+    const auto constraints = as_storage->getConstraints();
+
+    /// FIXME: use StreamFactory here
+    if (create.storage->engine->name == "Kafka")
+    {
+        // auto stream = StreamKafka::create(create, columns, constraints);
+        database->createStream(context, create.table, query_ptr);
+    }
+
+    return {};
+}
+
 BlockIO InterpreterCreateQuery::execute()
 {
     auto & create = query_ptr->as<ASTCreateQuery &>();
@@ -749,10 +781,12 @@ BlockIO InterpreterCreateQuery::execute()
     /// CREATE|ATTACH DATABASE
     if (!create.database.empty() && create.table.empty())
         return createDatabase(create);
-    else if (!create.is_dictionary)
-        return createTable(create);
-    else
+    else if (create.is_dictionary)
         return createDictionary(create);
+    else if (create.is_stream)
+        return createStream(create);
+    else
+        return createTable(create);
 }
 
 

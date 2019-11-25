@@ -37,6 +37,13 @@ public:
         const String & dictionary_name,
         const ASTPtr & query) override;
 
+    void createStream(
+        const Context & context,
+        const String & stream_name,
+        const ASTPtr & query) override;
+
+    void attachStream(const String & stream_name) override;
+
     void removeTable(
         const Context & context,
         const String & table_name) override;
@@ -89,17 +96,9 @@ public:
 
     void drop() override;
 
-    bool isTableExist(
-        const Context & context,
-        const String & table_name) const override;
+    ObjectType getObjectType(const Context &context, const String &name) const override;
 
-    bool isDictionaryExist(
-        const Context & context,
-        const String & table_name) const override;
-
-    StoragePtr tryGetTable(
-        const Context & context,
-        const String & table_name) const override;
+    StoragePtr tryGetObject(const Context & context, const String & object_name) const override;
 
     bool empty(const Context & context) const override;
 

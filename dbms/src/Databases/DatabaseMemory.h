@@ -43,6 +43,13 @@ public:
         const Context & context,
         bool reload) override;
 
+    void createStream(
+        const Context & context,
+        const String & stream_name,
+        const ASTPtr & query) override;
+
+    void attachStream(const String & stream_name) override;
+
     void removeTable(
         const Context & context,
         const String & table_name) override;

@@ -794,8 +794,7 @@ bool Context::isTableExist(const String & database_name, const String & table_na
     checkDatabaseAccessRightsImpl(db);
 
     Databases::const_iterator it = shared->databases.find(db);
-    return shared->databases.end() != it
-        && it->second->isTableExist(*this, table_name);
+    return shared->databases.end() != it && it->second->getObjectType(*this, table_name) == IDatabase::TABLE;
 }
 
 bool Context::isDictionaryExists(const String & database_name, const String & dictionary_name) const
@@ -806,7 +805,7 @@ bool Context::isDictionaryExists(const String & database_name, const String & di
     checkDatabaseAccessRightsImpl(db);
 
     Databases::const_iterator it = shared->databases.find(db);
-    return shared->databases.end() != it && it->second->isDictionaryExist(*this, dictionary_name);
+    return shared->databases.end() != it && it->second->getObjectType(*this, dictionary_name) == IDatabase::DICTIONARY;
 }
 
 bool Context::isDatabaseExist(const String & database_name) const
@@ -832,7 +831,7 @@ void Context::assertTableDoesntExist(const String & database_name, const String 
         checkDatabaseAccessRightsImpl(db);
 
     Databases::const_iterator it = shared->databases.find(db);
-    if (shared->databases.end() != it && it->second->isTableExist(*this, table_name))
+    if (shared->databases.end() != it && it->second->getObjectType(*this, table_name) == IDatabase::TABLE)
         throw Exception("Table " + backQuoteIfNeed(db) + "." + backQuoteIfNeed(table_name) + " already exists.", ErrorCodes::TABLE_ALREADY_EXISTS);
 }
 
@@ -954,7 +953,7 @@ StoragePtr Context::getTableImpl(const String & database_name, const String & ta
         database = it->second;
     }
 
-    auto table = database->tryGetTable(*this, table_name);
+    auto table = database->tryGetObject(*this, table_name);
     if (!table)
     {
         if (exception)

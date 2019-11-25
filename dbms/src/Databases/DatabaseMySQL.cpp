@@ -78,21 +78,24 @@ DatabaseTablesIteratorPtr DatabaseMySQL::getTablesIterator(const Context &, cons
     return std::make_unique<DatabaseTablesSnapshotIterator>(tables);
 }
 
-bool DatabaseMySQL::isTableExist(const Context & context, const String & name) const
+IDatabase::ObjectType DatabaseMySQL::getObjectType(const Context & context, const String & object_name) const
 {
-    return bool(tryGetTable(context, name));
+    if (tryGetObject(context, object_name))
+        return TABLE;
+
+    return NOT_EXIST;
 }
 
-StoragePtr DatabaseMySQL::tryGetTable(const Context &, const String & mysql_table_name) const
+StoragePtr DatabaseMySQL::tryGetObject(const Context &, const String & object_name) const
 {
     std::lock_guard<std::mutex> lock(mutex);
 
     fetchTablesIntoLocalCache();
 
-    if (local_tables_cache.find(mysql_table_name) != local_tables_cache.end())
-        return local_tables_cache[mysql_table_name].storage;
+    if (local_tables_cache.find(object_name) != local_tables_cache.end())
+        return local_tables_cache[object_name].storage;
 
-    return StoragePtr{};
+    return {};
 }
 
 ASTPtr DatabaseMySQL::tryGetCreateTableQuery(const Context &, const String & table_name) const

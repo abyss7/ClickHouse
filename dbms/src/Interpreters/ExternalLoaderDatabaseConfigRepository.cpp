@@ -11,7 +11,7 @@ namespace ErrorCodes
 
 namespace
 {
-String trimDatabaseName(const std::string & loadable_definition_name, const DatabasePtr database)
+String trimDatabaseName(const String & loadable_definition_name, const DatabasePtr database)
 {
     const auto & dbname = database->getDatabaseName();
     if (!startsWith(loadable_definition_name, dbname))
@@ -23,26 +23,25 @@ String trimDatabaseName(const std::string & loadable_definition_name, const Data
 }
 }
 
-LoadablesConfigurationPtr ExternalLoaderDatabaseConfigRepository::load(const std::string & loadable_definition_name) const
+LoadablesConfigurationPtr ExternalLoaderDatabaseConfigRepository::load(const String & loadable_definition_name) const
 {
     String dictname = trimDatabaseName(loadable_definition_name, database);
     return getDictionaryConfigurationFromAST(database->getCreateDictionaryQuery(context, dictname)->as<const ASTCreateQuery &>());
 }
 
-bool ExternalLoaderDatabaseConfigRepository::exists(const std::string & loadable_definition_name) const
+bool ExternalLoaderDatabaseConfigRepository::exists(const String & loadable_definition_name) const
 {
-    return database->isDictionaryExist(
-                     context, trimDatabaseName(loadable_definition_name, database));
+    return database->getObjectType(context, trimDatabaseName(loadable_definition_name, database)) == IDatabase::DICTIONARY;
 }
 
-Poco::Timestamp ExternalLoaderDatabaseConfigRepository::getUpdateTime(const std::string & loadable_definition_name)
+Poco::Timestamp ExternalLoaderDatabaseConfigRepository::getUpdateTime(const String & loadable_definition_name)
 {
     return database->getObjectMetadataModificationTime(context, trimDatabaseName(loadable_definition_name, database));
 }
 
-std::set<std::string> ExternalLoaderDatabaseConfigRepository::getAllLoadablesDefinitionNames() const
+std::set<String> ExternalLoaderDatabaseConfigRepository::getAllLoadablesDefinitionNames() const
 {
-    std::set<std::string> result;
+    std::set<String> result;
     const auto & dbname = database->getDatabaseName();
     auto itr = database->getDictionariesIterator(context);
     while (itr && itr->isValid())

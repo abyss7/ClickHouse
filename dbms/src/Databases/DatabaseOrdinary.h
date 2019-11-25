@@ -33,6 +33,11 @@ public:
         const String & dictionary_name,
         const ASTPtr & query) override;
 
+    void createStream(
+        const Context & context,
+        const String & stream_name,
+        const ASTPtr & query) override;
+
     void removeTable(
         const Context & context,
         const String & table_name) override;

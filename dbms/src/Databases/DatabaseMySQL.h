@@ -39,11 +39,9 @@ public:
 
     ASTPtr getCreateDatabaseQuery(const Context & context) const override;
 
-    bool isTableExist(const Context & context, const String & name) const override;
+    ObjectType getObjectType(const Context & context, const String & object_name) const override;
 
-    bool isDictionaryExist(const Context &, const String &) const override { return false; }
-
-    StoragePtr tryGetTable(const Context & context, const String & name) const override;
+    StoragePtr tryGetObject(const Context & context, const String & object_name) const override;
 
     ASTPtr tryGetCreateTableQuery(const Context & context, const String & name) const override;
 
@@ -95,6 +93,11 @@ public:
         throw Exception("MySQL database engine does not support attach dictionary.", ErrorCodes::NOT_IMPLEMENTED);
     }
 
+    void attachStream(const String &) override
+    {
+        throw Exception("MySQL database engine does not support attach stream.", ErrorCodes::NOT_IMPLEMENTED);
+    }
+
     void createTable(const Context &, const String &, const StoragePtr &, const ASTPtr &) override
     {
         throw Exception("MySQL database engine does not support create table.", ErrorCodes::NOT_IMPLEMENTED);
@@ -103,6 +106,11 @@ public:
     void createDictionary(const Context &, const String &, const ASTPtr &) override
     {
         throw Exception("MySQL database engine does not support create dictionary.", ErrorCodes::NOT_IMPLEMENTED);
+    }
+
+    void createStream(const Context &, const String &, const ASTPtr &) override
+    {
+        throw Exception("MySQL database engine does not support create stream.", ErrorCodes::NOT_IMPLEMENTED);
     }
 
 

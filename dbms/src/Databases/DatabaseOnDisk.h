@@ -53,6 +53,12 @@ public:
         const String & dictionary_name,
         const ASTPtr & query);
 
+    static void createStream(
+        IDatabase & database,
+        const Context & context,
+        const String & stream_name,
+        const ASTPtr & query);
+
     static void removeTable(
         IDatabase & database,
         const Context & context,
@@ -148,7 +154,7 @@ void DatabaseOnDisk::renameTable(
     if (!to_database_concrete)
         throw Exception("Moving tables between databases of different engines is not supported", ErrorCodes::NOT_IMPLEMENTED);
 
-    StoragePtr table = database.tryGetTable(context, table_name);
+    StoragePtr table = database.tryGetObject(context, table_name);
 
     if (!table)
         throw Exception("Table " + backQuote(database.getDatabaseName()) + "." + backQuote(table_name) + " doesn't exist.", ErrorCodes::UNKNOWN_TABLE);
