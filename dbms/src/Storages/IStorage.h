@@ -277,9 +277,7 @@ public:
       *
       * It is guaranteed that the table structure will not change over the lifetime of the returned streams (that is, there will not be ALTER, RENAME and DROP).
       */
-    virtual BlockOutputStreamPtr write(
-        const ASTPtr & /*query*/,
-        const Context & /*context*/)
+    virtual BlockOutputStreamPtr write(const Context & /*context*/)
     {
         throw Exception("Method write is not supported by storage " + getName(), ErrorCodes::NOT_IMPLEMENTED);
     }

@@ -623,8 +623,7 @@ BlockInputStreams StorageLog::read(
     return res;
 }
 
-BlockOutputStreamPtr StorageLog::write(
-    const ASTPtr & /*query*/, const Context & /*context*/)
+BlockOutputStreamPtr StorageLog::write(const Context & /*context*/)
 {
     loadMarks();
     return std::make_shared<LogBlockOutputStream>(*this);

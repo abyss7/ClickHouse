@@ -225,7 +225,7 @@ void StorageHDFS::rename(const String & /*new_path_to_db*/, const String & new_d
     database_name = new_database_name;
 }
 
-BlockOutputStreamPtr StorageHDFS::write(const ASTPtr & /*query*/, const Context & /*context*/)
+BlockOutputStreamPtr StorageHDFS::write(const Context & /*context*/)
 {
     return std::make_shared<HDFSBlockOutputStream>(uri,
         format_name,

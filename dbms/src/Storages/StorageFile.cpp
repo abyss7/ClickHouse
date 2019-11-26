@@ -328,9 +328,7 @@ private:
     BlockOutputStreamPtr writer;
 };
 
-BlockOutputStreamPtr StorageFile::write(
-    const ASTPtr & /*query*/,
-    const Context & /*context*/)
+BlockOutputStreamPtr StorageFile::write(const Context & /*context*/)
 {
     return std::make_shared<StorageFileBlockOutputStream>(*this,
         IStorage::chooseCompressionMethod(paths[0], compression_method));

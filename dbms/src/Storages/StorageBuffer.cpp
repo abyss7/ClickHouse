@@ -410,7 +410,7 @@ private:
 };
 
 
-BlockOutputStreamPtr StorageBuffer::write(const ASTPtr & /*query*/, const Context & /*context*/)
+BlockOutputStreamPtr StorageBuffer::write(const Context & /*context*/)
 {
     return std::make_shared<BufferBlockOutputStream>(*this);
 }

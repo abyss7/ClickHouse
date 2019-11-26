@@ -65,7 +65,7 @@ try
             block.insert(column);
         }
 
-        BlockOutputStreamPtr out = table->write({}, context);
+        BlockOutputStreamPtr out = table->write(context);
         out->write(block);
     }
 

@@ -31,7 +31,7 @@ public:
         return getTargetTable()->mayBenefitFromIndexForIn(left_in_operand, query_context);
     }
 
-    BlockOutputStreamPtr write(const ASTPtr & query, const Context & context) override;
+    BlockOutputStreamPtr write(const Context & context) override;
 
     void drop(TableStructureWriteLockHolder &) override;
 

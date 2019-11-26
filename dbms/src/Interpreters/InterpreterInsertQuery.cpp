@@ -111,7 +111,7 @@ BlockIO InterpreterInsertQuery::execute()
     /// NOTE: we explicitly ignore bound materialized views when inserting into Kafka Storage.
     ///       Otherwise we'll get duplicates when MV reads same rows again from Kafka.
     if (table->noPushingToViews() && !no_destination)
-        out = table->write(query_ptr, context);
+        out = table->write(context);
     else
         out = std::make_shared<PushingToViewsBlockOutputStream>(query.database, query.table, table, context, query_ptr, no_destination);
 

@@ -210,7 +210,7 @@ void IStorageURLBase::rename(const String & /*new_path_to_db*/, const String & n
     database_name = new_database_name;
 }
 
-BlockOutputStreamPtr IStorageURLBase::write(const ASTPtr & /*query*/, const Context & /*context*/)
+BlockOutputStreamPtr IStorageURLBase::write(const Context & /*context*/)
 {
     return std::make_shared<StorageURLBlockOutputStream>(
         uri, format_name, getSampleBlock(), context_global,

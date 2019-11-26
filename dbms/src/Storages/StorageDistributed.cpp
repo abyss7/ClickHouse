@@ -363,7 +363,7 @@ BlockInputStreams StorageDistributed::read(
 }
 
 
-BlockOutputStreamPtr StorageDistributed::write(const ASTPtr &, const Context & context)
+BlockOutputStreamPtr StorageDistributed::write(const Context & context)
 {
     auto cluster = getCluster();
     const auto & settings = context.getSettingsRef();

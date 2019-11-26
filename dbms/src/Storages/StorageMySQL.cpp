@@ -192,8 +192,7 @@ private:
 };
 
 
-BlockOutputStreamPtr StorageMySQL::write(
-    const ASTPtr & /*query*/, const Context & context)
+BlockOutputStreamPtr StorageMySQL::write(const Context & context)
 {
     return std::make_shared<StorageMySQLBlockOutputStream>(*this, remote_database_name, remote_table_name, pool.Get(), context.getSettingsRef().mysql_max_rows_to_insert);
 }

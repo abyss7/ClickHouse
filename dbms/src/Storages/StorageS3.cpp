@@ -194,7 +194,7 @@ void StorageS3::rename(const String & /*new_path_to_db*/, const String & new_dat
     database_name = new_database_name;
 }
 
-BlockOutputStreamPtr StorageS3::write(const ASTPtr & /*query*/, const Context & /*context*/)
+BlockOutputStreamPtr StorageS3::write(const Context & /*context*/)
 {
     return std::make_shared<StorageS3BlockOutputStream>(
         uri,

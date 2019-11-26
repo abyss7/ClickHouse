@@ -206,11 +206,11 @@ BlockInputStreams StorageMaterializedView::read(
     return streams;
 }
 
-BlockOutputStreamPtr StorageMaterializedView::write(const ASTPtr & query, const Context & context)
+BlockOutputStreamPtr StorageMaterializedView::write(const Context & context)
 {
     auto storage = getTargetTable();
     auto lock = storage->lockStructureForShare(true, context.getCurrentQueryId());
-    auto stream = storage->write(query, context);
+    auto stream = storage->write(context);
     stream->addTableLock(lock);
     return stream;
 }

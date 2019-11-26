@@ -116,8 +116,7 @@ BlockInputStreams StorageMemory::read(
 }
 
 
-BlockOutputStreamPtr StorageMemory::write(
-    const ASTPtr & /*query*/, const Context & /*context*/)
+BlockOutputStreamPtr StorageMemory::write(const Context & /*context*/)
 {
     return std::make_shared<MemoryBlockOutputStream>(*this);
 }

@@ -3031,7 +3031,7 @@ void StorageReplicatedMergeTree::assertNotReadonly() const
 }
 
 
-BlockOutputStreamPtr StorageReplicatedMergeTree::write(const ASTPtr & /*query*/, const Context & context)
+BlockOutputStreamPtr StorageReplicatedMergeTree::write(const Context & context)
 {
     const auto storage_settings_ptr = getSettings();
     assertNotReadonly();
