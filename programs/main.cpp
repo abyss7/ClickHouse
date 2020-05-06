@@ -1,55 +1,49 @@
-#include <signal.h>
-#include <setjmp.h>
-#include <unistd.h>
-
-#include <new>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <utility> /// pair
-
-#if __has_include("config_tools.h")
-#include "config_tools.h"
-#endif
-#if __has_include(<common/config_common.h>)     /// "Arcadia" build system lacks configure files.
-#include <common/config_common.h>
-#endif
-#if __has_include("config_core.h")
-#include "config_core.h"
-#endif
-
 #include <Common/StringUtils/StringUtils.h>
-
 #include <common/phdr_cache.h>
 #include <ext/scope_guard.h>
 
+#if !defined(ARCADIA_BUILD)
+#    include "config_tools.h"
+#endif
+
+#include <iostream>
+#include <new>
+#include <string>
+#include <utility> /// pair
+#include <vector>
+
+#include <setjmp.h>
+#include <signal.h>
+#include <unistd.h>
+
 
 /// Universal executable for various clickhouse applications
-#if ENABLE_CLICKHOUSE_SERVER || !defined(ENABLE_CLICKHOUSE_SERVER)
+
+#if !defined(ENABLE_CLICKHOUSE_SERVER) || ENABLE_CLICKHOUSE_SERVER
 int mainEntryClickHouseServer(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_CLIENT || !defined(ENABLE_CLICKHOUSE_CLIENT)
+#if !defined(ENABLE_CLICKHOUSE_CLIENT) || ENABLE_CLICKHOUSE_CLIENT
 int mainEntryClickHouseClient(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_LOCAL || !defined(ENABLE_CLICKHOUSE_LOCAL)
+#if !defined(ENABLE_CLICKHOUSE_LOCAL) || ENABLE_CLICKHOUSE_LOCAL
 int mainEntryClickHouseLocal(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_BENCHMARK || !defined(ENABLE_CLICKHOUSE_BENCHMARK)
+#if !defined(ENABLE_CLICKHOUSE_BENCHMARK) || ENABLE_CLICKHOUSE_BENCHMARK
 int mainEntryClickHouseBenchmark(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_EXTRACT_FROM_CONFIG || !defined(ENABLE_CLICKHOUSE_EXTRACT_FROM_CONFIG)
+#if !defined(ENABLE_CLICKHOUSE_EXTRACT_FROM_CONFIG) || ENABLE_CLICKHOUSE_EXTRACT_FROM_CONFIG
 int mainEntryClickHouseExtractFromConfig(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_COMPRESSOR || !defined(ENABLE_CLICKHOUSE_COMPRESSOR)
+#if !defined(ENABLE_CLICKHOUSE_COMPRESSOR) || ENABLE_CLICKHOUSE_COMPRESSOR
 int mainEntryClickHouseCompressor(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_FORMAT || !defined(ENABLE_CLICKHOUSE_FORMAT)
+#if !defined(ENABLE_CLICKHOUSE_FORMAT) || ENABLE_CLICKHOUSE_FORMAT
 int mainEntryClickHouseFormat(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_COPIER || !defined(ENABLE_CLICKHOUSE_COPIER)
+#if !defined(ENABLE_CLICKHOUSE_COPIER) || ENABLE_CLICKHOUSE_COPIER
 int mainEntryClickHouseClusterCopier(int argc, char ** argv);
 #endif
-#if ENABLE_CLICKHOUSE_OBFUSCATOR || !defined(ENABLE_CLICKHOUSE_OBFUSCATOR)
+#if !defined(ENABLE_CLICKHOUSE_OBFUSCATOR) || ENABLE_CLICKHOUSE_OBFUSCATOR
 int mainEntryClickHouseObfuscator(int argc, char ** argv);
 #endif
 
@@ -58,7 +52,6 @@ namespace
 {
 
 using MainFunc = int (*)(int, char**);
-
 
 /// Add an item here to register new application
 std::pair<const char *, MainFunc> clickhouse_applications[] =

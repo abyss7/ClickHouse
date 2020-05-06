@@ -1,5 +1,5 @@
-# 'clickhouse' binary is a multi purpose tool,
-# that contain multiple execution modes (client, server, etc.)
+# 'clickhouse' binary is a multi-purpose tool,
+# that provides multiple execution modes (client, server, etc.)
 # each of them is built and linked as a separate library, defined below.
 
 option (ENABLE_CLICKHOUSE_ALL "Enable all tools" ON)
